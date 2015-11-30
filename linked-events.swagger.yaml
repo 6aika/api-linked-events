@@ -511,6 +511,11 @@ paths:
     get:
       summary: Returns list of keywords used for describing events
       operationId: keyword_list
+      parameters:
+        - name: event.data_source
+          in: query
+          type: string
+          description: Only return keywords that are associated with an event by this data source.
       responses:
         200:
           description: List of keywords
@@ -680,6 +685,25 @@ paths:
         items:
           type: string
         description: Embed the data fields sent in this parameter
+      - name: publisher
+        in: query
+        type: string
+        description: Filter by producers name
+      - name: location
+        in: query
+        type: string
+        description: Filter by event location id
+      - name: recurring
+        in: query
+        type: string
+        enum:
+          - super
+          - sub
+        description: Only show super events or sub events
+      - name: max_duration
+        in: query
+        type: integer
+        description: Maximum durations for event in seconds.a
 
     post:
       summary: Create a new event
