@@ -21,6 +21,20 @@ schemes:
 produces:
   - application/json
 
+parameters:
+  page_param:
+    name: page
+    in: query
+    description: request particular page in paginated results
+    required: false
+    type: integer
+  pagesize_param:
+    name: page_size
+    in: query
+    description: request that server delivers page_size results in response
+    required: false
+    type: integer
+
 definitions:
 
   meta_definition:
@@ -58,6 +72,7 @@ definitions:
 
   place:
     type: object
+    description: Places describe physical locations for events and means for contacting these locations. Place definitions come from organizations publishing events (field "publisher") and can thus be slightly different between places sourced from different organizations.
     properties:
       id:
         type: string
@@ -79,7 +94,7 @@ definitions:
             description: place name in English
       image:
         type: string
-        description: ''
+        description: Image illustrating the event
       origin_id:
         type: string
         description: place identifier in the originating system
@@ -107,7 +122,7 @@ definitions:
             type: string
             description: place description in English
       position:
-      # FIXME: reference GeoJSON (no official schema available)
+      # FIXME: reference GeoJSON(?) (no official schema available)
         description: geographic position of the place
         type: object
         properties:
@@ -117,7 +132,7 @@ definitions:
               type: number
             description: coordinates as specified by type property
           type:
-            description: interpretation of the coordinates property
+            description: interpretation of the coordinates property. Only point is supported in this version
             type: string
             enum:
             - Point
@@ -126,17 +141,18 @@ definitions:
         description: ''
       # Telephone would be object per language as well?
       telephone:
-        type: string
-        description: ''
-      telephone_fi:
-        type: string
-        description: ''
-      telephone_sv:
-        type: string
-        description: ''
-      telephone_en:
-        type: string
-        description: ''
+        type: object
+        description: Contact phone number for the event
+        properties:
+          fi:
+            type: string
+            description: phone number for Finnish speakers
+          sv:
+            type: string
+            description: phone number for Swedish speakers
+          en:
+            type: string
+            description: phone number for English speakers
       contact_type:
         type: string
         description: ''
@@ -160,65 +176,37 @@ definitions:
             description: locality in Finnish
           sv:
             type: string
-            description: locallity in Swedish
+            description: locality in Swedish
           en:
             type: string
             description: locality in English
       address_region:
         type: string
-        description: ''
+        description: FIXME ask Juha!
       postal_code:
         type: string
-        description: ''
+        description: Postal code for paper mail
       post_office_box_num:
         type: string
-        description: ''
+        description: PO box in case mail is not delivered to building
       address_country:
         type: string
-        description: ''
+        description: Country for paper mail
       deleted:
         type: boolean
-        description: ''
-      # Are these internal?
-      lft:
-        type: integer
-        readOnly: true
-        format: int64
-        description: ''
-      rght:
-        type: integer
-        readOnly: true
-        format: int64
-        description: ''
-      tree_id:
-        type: integer
-        readOnly: true
-        format: int64
-        description: ''
-      level:
-        type: integer
-        readOnly: true
-        format: int64
-        description: ''
-      # End: possibly internal
+        description: This place entry is not used anymore, but old events still reference it. This might be because of duplicate removal.
       data_source:
         type: string
-        description: ''
-      created_by:
-        type: string
-        description: ''
-      last_modified_by:
-        type: string
-        description: ''
+        description: FIXME ask Juha/Timo. Probably an internal detail for original implementation
       publisher:
         type: string
-        description: ''
+        description: Organization that provided the event that this place is associated with
       parent:
         type: string
         description: ''
 
   keyword:
-    description: Keyword structure
+    description: Keywords are used to describe events. Keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations.
     type: object
     required:
     - id
@@ -274,6 +262,7 @@ definitions:
 
   language:
     type: object
+    description: Every language supported API has it's name translated to every other supported language. This object contains the translations for one language.
     properties:
       id:
         type: string
@@ -290,6 +279,7 @@ definitions:
 
   event:
     type: object
+    description: Describes the actual events. Recurring events are automatically are organized into collections called "super events", which reference "sub events". Super events are represented as their own event records, with the references to sub event records contained in "sub_events" property. It is implementation dependent how the grouping of events is done. It might be automatic based on eg. event name and thus group unrelated events together.
     properties:
       id:
         description: consists of source prefix and source specific identifier
@@ -305,7 +295,7 @@ definitions:
           type: string
         readOnly: true
       super_event:
-        description: references upper level event uri?
+        description: references the aggregate event containing this event
         type: string
         readOnly: true
       event_status:
@@ -326,7 +316,7 @@ definitions:
         items:
           type: string
         readOnly: true
-        description: ''
+        description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series.
       custom_data:
         type: string
         description: ''
@@ -516,6 +506,9 @@ paths:
           in: query
           type: string
           description: Only return keywords that are associated with an event by this data source.
+        - $ref: '#/parameters/page_param'
+        - $ref: '#/parameters/pagesize_param'
+        
       responses:
         200:
           description: List of keywords
@@ -529,7 +522,7 @@ paths:
                 items:
                   $ref: '#/definitions/keyword'
               
-  /keyword/{pk}/:
+  /keyword/{id}/:
     get:
       summary: Return information for single keyword
       operationId: keyword_retrieve
@@ -540,8 +533,9 @@ paths:
             $ref: '#/definitions/keyword'
       parameters:
       - type: string
+        description: Same as id in keyword schema
         in: path
-        name: pk
+        name: id
         required: true
         
   /place/:
@@ -665,13 +659,13 @@ paths:
       - name: start
         in: query
         type: string
-        format: date
-        description: Search start date
+        format: date-time
+        description: Search for events beginning or ending after this time
       - name: end
         in: query
         type: string
-        format: date
-        description: Search end date
+        format: date-time
+        description: Search for events beginning or ending before this time
       - name: bbox
         in: query
         type: array
@@ -679,12 +673,13 @@ paths:
           type: string
         minItems: 4
         maxItems: 4
+        description: Search for events that are within this bounding box. Decimal coordinates are given in order west, south, east, north. Period is used as decimal separator.
       - name: include
         in: query
         type: array
         items:
           type: string
-        description: Embed the data fields sent in this parameter
+        description: Embed in response expanded versions data fields specified with this parameter, otherwise many fields are references
       - name: publisher
         in: query
         type: string
@@ -693,18 +688,34 @@ paths:
         in: query
         type: string
         description: Filter by event location id
+      - name: keyword
+        in: query
+        type: string
+        description: filter by keywords associated with the event. Keywords are identified by id, as returned by keyword endpoint
       - name: recurring
         in: query
         type: string
         enum:
           - super
           - sub
-        description: Only show super events or sub events
+        description: only show super events or sub events. Only return aggregate events (super) or actual events (sub).
       - name: max_duration
         in: query
         type: integer
-        description: Maximum durations for event in seconds.a
-
+        description: maximum duration for event in seconds
+      - name: min_duration
+        in: query
+        type: integer
+        description: minimum duration for event in seconds
+      - name: text
+        in: query
+        type: string
+        description: 'Free text search through following fields: name, description, short_description, info_url. All translated versions of the field are considered.'
+      - name: last_modified_since
+        in: query
+        type: string
+        format: date-time
+        description: return only results that have been modified after this date
     post:
       summary: Create a new event
       operationId: event_create
@@ -715,11 +726,6 @@ paths:
           schema:
             $ref: '#/definitions/event'
       parameters:
-      - type: string
-        in: formData
-        name: id
-        required: true
-        description: ''
       - type: string
         in: formData
         name: event_status
@@ -924,3 +930,225 @@ paths:
         required: true
         description: ''
 
+  /event/{id}/:
+    put:
+      summary: Update an event
+      description: Events can be updated if the user has appropriate access permissions. The original implementation behaves like PATCH, ie. if some field is left out from the PUT call, its value is retained in database. In order to ensure consistent behaviour, users should always supply every field in PUT call.
+      operationId: event_update
+      # FIXME, this is not a response, just a placeholder for schema 
+      responses:
+        200:
+          description: FIXME
+          schema:
+            $ref: '#/definitions/event'
+      parameters:
+      - type: string
+        in: path
+        name: id
+        required: true
+        description: Identifier for the event to be updated
+      - type: string
+        in: formData
+        name: event_status
+        required: true
+        description: ''
+      - type: string
+        in: formData
+        name: external_links
+        required: true
+        description: ''
+      - type: string
+        in: formData
+        name: offers
+        required: true
+        description: ''
+      - type: string
+        in: formData
+        name: custom_data
+        description: ''
+      - type: string
+        in: formData
+        name: name
+        required: true
+        description: ''
+      - type: string
+        in: formData
+        name: name_fi
+        description: ''
+      - type: string
+        in: formData
+        name: name_sv
+        description: ''
+      - type: string
+        in: formData
+        name: name_en
+        description: ''
+      - type: string
+        in: formData
+        name: image
+        description: ''
+      - type: string
+        in: formData
+        name: origin_id
+        description: ''
+      - type: string
+        in: formData
+        name: created_time
+        format: date-time
+        description: ''
+      - type: string
+        in: formData
+        name: last_modified_time
+        format: date-time
+        description: ''
+      - type: string
+        in: formData
+        name: info_url
+        description: ''
+      - type: string
+        in: formData
+        name: info_url_fi
+        description: ''
+      - type: string
+        in: formData
+        name: info_url_sv
+        description: ''
+      - type: string
+        in: formData
+        name: info_url_en
+        description: ''
+      - type: string
+        in: formData
+        name: description
+        description: ''
+      - type: string
+        in: formData
+        name: description_fi
+        description: ''
+      - type: string
+        in: formData
+        name: description_sv
+        description: ''
+      - type: string
+        in: formData
+        name: description_en
+        description: ''
+      - type: string
+        in: formData
+        name: short_description
+        description: ''
+      - type: string
+        in: formData
+        name: short_description_fi
+        description: ''
+      - type: string
+        in: formData
+        name: short_description_sv
+        description: ''
+      - type: string
+        in: formData
+        name: short_description_en
+        description: ''
+      - type: string
+        in: formData
+        name: date_published
+        format: date-time
+        description: ''
+      - type: string
+        in: formData
+        name: headline
+        description: ''
+      - type: string
+        in: formData
+        name: headline_fi
+        description: ''
+      - type: string
+        in: formData
+        name: headline_sv
+        description: ''
+      - type: string
+        in: formData
+        name: headline_en
+        description: ''
+      - type: string
+        in: formData
+        name: secondary_headline
+        description: ''
+      - type: string
+        in: formData
+        name: secondary_headline_fi
+        description: ''
+      - type: string
+        in: formData
+        name: secondary_headline_sv
+        description: ''
+      - type: string
+        in: formData
+        name: secondary_headline_en
+        description: ''
+      - type: string
+        in: formData
+        name: provider
+        description: ''
+      - type: string
+        in: formData
+        name: provider_fi
+        description: ''
+      - type: string
+        in: formData
+        name: provider_sv
+        description: ''
+      - type: string
+        in: formData
+        name: provider_en
+        description: ''
+      - type: string
+        in: formData
+        name: location_extra_info
+        description: ''
+      - type: string
+        in: formData
+        name: location_extra_info_fi
+        description: ''
+      - type: string
+        in: formData
+        name: location_extra_info_sv
+        description: ''
+      - type: string
+        in: formData
+        name: location_extra_info_en
+        description: ''
+      - type: string
+        in: formData
+        name: start_time
+        format: date-time
+        description: ''
+      - type: string
+        in: formData
+        name: end_time
+        format: date-time
+        description: ''
+      - type: string
+        in: formData
+        name: audience
+        description: ''
+      - type: string
+        in: formData
+        name: data_source
+        required: true
+        description: ''
+      - type: string
+        in: formData
+        name: created_by
+        description: ''
+      - type: string
+        in: formData
+        name: last_modified_by
+        description: ''
+      - type: string
+        in: formData
+        name: publisher
+        required: true
+        description: ''
+
+  
