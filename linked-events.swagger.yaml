@@ -138,7 +138,7 @@ definitions:
             - Point
       email:
         type: string
-        description: ''
+        description: Contact email for the event
       # Telephone would be object per language as well?
       telephone:
         type: object
@@ -230,56 +230,60 @@ definitions:
             description: Keyword in English
       image:
         type: string
-        description: ''
+        description: FIXME(verify) An evocative image for the keyword
       origin_id:
         type: string
-        description: ''
+        description: FIXME(verify) Identifier for the keyword in the originating system
       created_time:
         type: string
         format: date-time
-        description: ''
+        description: FIXME(missing)
       last_modified_time:
         type: string
         format: date-time
-        description: ''
+        description: FIXME(missing)
       aggregate:
         type: boolean
-        description: ''
+        description: FIXME(verify) This keyword is an combination of several keywords at source
       data_source:
         type: string
         description: Source of the keyword
       created_by:
         type: string
-        description: ''
+        description: FIXME(missing)
       last_modified_by:
         type: string
-        description: ''
+        description: FIXME(missing)
       alt_labels:
         type: array
         items:
           type: string
-        description: ''
+        description: FIXME(verify) alternative labels for this keyword, no language specified
 
   language:
     type: object
-    description: Every language supported API has it's name translated to every other supported language. This object contains the translations for one language.
+    description: Every language supported in API has it's name translated to every other supported language. This object contains the translations for one language.
     properties:
       id:
         type: string
-        description: ''
+        description: Identifier for the language (typically ISO639-1)
       name:
         type: object
+        description: Translation for the language name. Unlikely described here there can be translations to all languages supported by the API, not only the ones listed below.
         properties:
           fi:
             description: Name of the language in Finnish
+            type: string
           se:
             description: Name of the language in Swedish
+            type: string
           en:
             description: Name of the language in English
+            type: string
 
   event:
     type: object
-    description: Describes the actual events. Recurring events are organized into collection events called "super events", which reference "sub events". Super events are represented as their own event objects, with the references to sub event objects contained in "sub_events" property. It is implementation dependent how the grouping of events is done. It might be automatic based on eg. event name and thus group unrelated events together and miss related events.
+    description: Describes the actual events. Recurring events are organized into collection events called "super events", which reference "sub events". Super events are normal event objects, with the references to sub event objects contained in "sub_events" property. It is implementation dependent how the grouping of events is done. It might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.
     properties:
       id:
         description: consists of source prefix and source specific identifier
@@ -422,22 +426,22 @@ definitions:
         type: integer
         readOnly: true
         format: int64
-        description: ''
+        description: FIXME(missing) implementation detail?
       rght:
         type: integer
         readOnly: true
         format: int64
-        description: ''
+        description: FIXME(missing) implementation detail?
       tree_id:
         type: integer
         readOnly: true
         format: int64
-        description: ''
+        description: FIXME(missing) implementation detail?
       level:
         type: integer
         readOnly: true
         format: int64
-        description: ''
+        description: FIXME(missing) implementation detail?
       data_source:
         type: string
         description: ''
@@ -726,214 +730,19 @@ paths:
       operationId: event_create
       # FIXME, this is not a response, just a placeholder for schema 
       responses:
-        200:
-          description: FIXME
+        201:
+          description: Object has been succesfully created. A copy of the object is returned in response body and headers contain Location pointing to the created event
           schema:
             $ref: '#/definitions/event'
+        400:
+          description: FIXME(missing) Something went wrong
+        401:
+          description: FIXME(missing) Something else went wrong
       parameters:
-      - type: string
-        in: formData
-        name: event_status
-        required: true
-        description: ''
-      - type: string
-        in: formData
-        name: external_links
-        required: true
-        description: ''
-      - type: string
-        in: formData
-        name: offers
-        required: true
-        description: ''
-      - type: string
-        in: formData
-        name: custom_data
-        description: ''
-      - type: string
-        in: formData
-        name: name
-        required: true
-        description: ''
-      - type: string
-        in: formData
-        name: name_fi
-        description: ''
-      - type: string
-        in: formData
-        name: name_sv
-        description: ''
-      - type: string
-        in: formData
-        name: name_en
-        description: ''
-      - type: string
-        in: formData
-        name: image
-        description: ''
-      - type: string
-        in: formData
-        name: origin_id
-        description: ''
-      - type: string
-        in: formData
-        name: created_time
-        format: date-time
-        description: ''
-      - type: string
-        in: formData
-        name: last_modified_time
-        format: date-time
-        description: ''
-      - type: string
-        in: formData
-        name: info_url
-        description: ''
-      - type: string
-        in: formData
-        name: info_url_fi
-        description: ''
-      - type: string
-        in: formData
-        name: info_url_sv
-        description: ''
-      - type: string
-        in: formData
-        name: info_url_en
-        description: ''
-      - type: string
-        in: formData
-        name: description
-        description: ''
-      - type: string
-        in: formData
-        name: description_fi
-        description: ''
-      - type: string
-        in: formData
-        name: description_sv
-        description: ''
-      - type: string
-        in: formData
-        name: description_en
-        description: ''
-      - type: string
-        in: formData
-        name: short_description
-        description: ''
-      - type: string
-        in: formData
-        name: short_description_fi
-        description: ''
-      - type: string
-        in: formData
-        name: short_description_sv
-        description: ''
-      - type: string
-        in: formData
-        name: short_description_en
-        description: ''
-      - type: string
-        in: formData
-        name: date_published
-        format: date-time
-        description: ''
-      - type: string
-        in: formData
-        name: headline
-        description: ''
-      - type: string
-        in: formData
-        name: headline_fi
-        description: ''
-      - type: string
-        in: formData
-        name: headline_sv
-        description: ''
-      - type: string
-        in: formData
-        name: headline_en
-        description: ''
-      - type: string
-        in: formData
-        name: secondary_headline
-        description: ''
-      - type: string
-        in: formData
-        name: secondary_headline_fi
-        description: ''
-      - type: string
-        in: formData
-        name: secondary_headline_sv
-        description: ''
-      - type: string
-        in: formData
-        name: secondary_headline_en
-        description: ''
-      - type: string
-        in: formData
-        name: provider
-        description: ''
-      - type: string
-        in: formData
-        name: provider_fi
-        description: ''
-      - type: string
-        in: formData
-        name: provider_sv
-        description: ''
-      - type: string
-        in: formData
-        name: provider_en
-        description: ''
-      - type: string
-        in: formData
-        name: location_extra_info
-        description: ''
-      - type: string
-        in: formData
-        name: location_extra_info_fi
-        description: ''
-      - type: string
-        in: formData
-        name: location_extra_info_sv
-        description: ''
-      - type: string
-        in: formData
-        name: location_extra_info_en
-        description: ''
-      - type: string
-        in: formData
-        name: start_time
-        format: date-time
-        description: ''
-      - type: string
-        in: formData
-        name: end_time
-        format: date-time
-        description: ''
-      - type: string
-        in: formData
-        name: audience
-        description: ''
-      - type: string
-        in: formData
-        name: data_source
-        required: true
-        description: ''
-      - type: string
-        in: formData
-        name: created_by
-        description: ''
-      - type: string
-        in: formData
-        name: last_modified_by
-        description: ''
-      - type: string
-        in: formData
-        name: publisher
-        required: true
-        description: ''
+      - name: event_object
+        in: body
+        schema:
+          $ref: '#/definitions/event'
 
   /event/{id}/:
     get:
@@ -957,7 +766,7 @@ paths:
       # FIXME, this is not a response, just a placeholder for schema 
       responses:
         200:
-          description: FIXME
+          description: Event has been succesfully replaced
           schema:
             $ref: '#/definitions/event'
       parameters:
