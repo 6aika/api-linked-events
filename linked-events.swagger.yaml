@@ -459,31 +459,33 @@ definitions:
     type: object
     properties:
       price:
-        type: string
+        type: object
         description: ''
-      price_fi:
-        type: string
-        description: ''
-      price_sv:
-        type: string
-        description: ''
-      price_en:
-        type: string
-        description: ''
+        properties:
+          fi:
+            type: string
+            description: ''
+          sv:
+            type: string
+            description: ''
+          en:
+            type: string
+            description: ''
       info_url:
         $ref: '#/definitions/info_url_definition'
       description:
-        type: string
+        type: object
         description: ''
-      description_fi:
-        type: string
-        description: ''
-      description_sv:
-        type: string
-        description: ''
-      description_en:
-        type: string
-        description: ''
+        properties:
+          fi:
+            type: string
+            description: ''
+          sv:
+            type: string
+            description: ''
+          en:
+            type: string
+            description: ''
       is_free:
         type: boolean
         description: ''
