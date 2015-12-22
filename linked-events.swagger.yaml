@@ -456,42 +456,43 @@ definitions:
         description: ''
 
   offer:
+    description: Price information record for this event. The prices are not in a structured format and the format depends on information source.
     type: object
     properties:
       price:
         type: object
-        description: ''
-        properties:
+        description: Price
+        properties: Price for the event. These are not bare numbers but instead descriptions of the pricing scheme.
           fi:
             type: string
-            description: ''
+            description: Finnish translation for the price information
           sv:
             type: string
-            description: ''
+            description: Swedish translation for the price information
           en:
             type: string
-            description: ''
+            description: English translation for the price information
       info_url:
         $ref: '#/definitions/info_url_definition'
       description:
         type: object
-        description: ''
+        description: Further description of the pricing
         properties:
           fi:
             type: string
-            description: ''
+            description: Finnish price description
           sv:
             type: string
-            description: ''
+            description: Swedish price description
           en:
             type: string
-            description: ''
+            description: English price description
       is_free:
         type: boolean
-        description: ''
+        description: Whether the event is of free admission
   
   eventlink:
-    description: Links to entities that the event publisher considers related to this event. Eg. links to catering service availabe during theatrical production. The links will likely point to unstructured content
+    description: Links to entities that the event publisher considers related to this event. Eg. links to catering service available during theatrical production. The links will likely point to unstructured content
     type: object
     properties:
       name:
@@ -585,7 +586,7 @@ paths:
   /language/:
     get:
       summary: Return a list of languages used for describing events
-      description: 'A long description here'
+      description: The returned list describes languages used for describing events in this Linked events instance
       operationId: language_list
       responses:
         200:
@@ -603,7 +604,7 @@ paths:
   /language/{id}/:
     get:
       summary: Return information for single language
-      description: 'A long description here'
+      description: Can be used to retrieve translations for a single language
       operationId: language_retrieve
       responses:
         200:
@@ -721,7 +722,7 @@ paths:
       - name: text
         in: query
         type: string
-        description: 'Free text search through following fields: name, description, short_description, info_url. All translated versions of the field are considered.'
+        description: 'Free text search through following fields: name, description, short_description, info_url. All versions of the field are considered.'
       - name: last_modified_since
         in: query
         type: string
@@ -730,7 +731,6 @@ paths:
     post:
       summary: Create a new event
       operationId: event_create
-      # FIXME, this is not a response, just a placeholder for schema 
       responses:
         201:
           description: Object has been succesfully created. A copy of the object is returned in response body and headers contain Location pointing to the created event
