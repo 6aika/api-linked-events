@@ -456,13 +456,13 @@ definitions:
         description: ''
 
   offer:
-    description: Price information record for this event. The prices are not in a structured format and the format depends on information source.
+    description: information record for this event. The prices are not in a structured format and the format depends on information source. An exception to this is the case of free event. These are indicated using is_free flag, which is searchable.
     type: object
     properties:
       price:
         type: object
-        description: Price
-        properties: Price for the event. These are not bare numbers but instead descriptions of the pricing scheme.
+        description: Price of the event. These are not bare numbers but instead descriptions of the pricing scheme.
+        properties:
           fi:
             type: string
             description: Finnish translation for the price information
