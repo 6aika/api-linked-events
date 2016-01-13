@@ -54,24 +54,6 @@ definitions:
         type: string
         format: url
 
-  info_url_definition:
-    title: Info URL
-    description: URL to page with more information
-    type: object
-    properties:
-      fi:
-        description: URL for Finnish page
-        type: string
-        format: url
-      se:
-        description: URL for Swedish page
-        type: string
-        format: url
-      en:
-        description: URL to English page
-        type: string
-        format: url
-
   place:
     type: object
     title: Place
@@ -112,7 +94,21 @@ definitions:
         description: ''
       # No examples of the translated representation, probably same as with other multilingual fields.
       info_url:
-        $ref: '#/definitions/info_url_definition'
+        description: Link (URL) to a page with more information about place
+        type: object
+        properties:
+          fi:
+            description: Link to Finnish page
+            type: string
+            format: url
+          se:
+            description: Link to Swedish page
+            type: string
+            format: url
+          en:
+            description: Link to English page
+            type: string
+            format: url
       description:
         type: object
         properties:
@@ -360,7 +356,21 @@ definitions:
         format: date-time
         description: ''
       info_url:
-        $ref: '#/definitions/info_url_definition'
+        description: Link (URL) to a page with more information about event
+        type: object
+        properties:
+          fi:
+            description: Link to Finnish page
+            type: string
+            format: url
+          se:
+            description: Link to Swedish page
+            type: string
+            format: url
+          en:
+            description: Link to English page
+            type: string
+            format: url
       description:
         type: object
         properties:
@@ -432,27 +442,7 @@ definitions:
         description: ''
       audience:
         type: string
-        description: Target audience for the event (like social state, age, health). Might refer to keyworda
-      lft:
-        type: integer
-        readOnly: true
-        format: int64
-        description: FIXME(missing) implementation detail?
-      rght:
-        type: integer
-        readOnly: true
-        format: int64
-        description: FIXME(missing) implementation detail?
-      tree_id:
-        type: integer
-        readOnly: true
-        format: int64
-        description: FIXME(missing) implementation detail?
-      level:
-        type: integer
-        readOnly: true
-        format: int64
-        description: FIXME(missing) implementation detail?
+        description: Target audience for the event (like social state, age, health). Might refer to keywords
       data_source:
         type: string
         description: ''
@@ -465,7 +455,6 @@ definitions:
       publisher:
         type: string
         description: ''
-
   offer:
     title: Price offers
     description: information record for this event. The prices are not in a structured format and the format depends on information source. An exception to this is the case of free event. These are indicated using is_free flag, which is searchable.
@@ -485,7 +474,21 @@ definitions:
             type: string
             description: English translation for the price information
       info_url:
-        $ref: '#/definitions/info_url_definition'
+        description: Link (URL) to a page with more information about offer
+        type: object
+        properties:
+          fi:
+            description: Link to Finnish page
+            type: string
+            format: url
+          se:
+            description: Link to Swedish page
+            type: string
+            format: url
+          en:
+            description: Link to English page
+            type: string
+            format: url
       description:
         type: object
         description: Further description of the pricing
