@@ -4,11 +4,11 @@ swagger: '2.0'
 info:
   title: Linked Events information API
   description: |-
-      Linked Events provides categorized data on events and places
+      Linked Events provides categorized data on events and places using JSON-LD format.
       
-      In the API, you can search data by date or location as well as city neighborhoods.
-      
-      The API provides data in JSON-LD format.
+      Events can be searched by date and location. Location can be exact address or larger
+      area such as neighbourhood or burgh
+
   termsOfService: (depends on data provider)
   version: 0.0.1
   
@@ -38,6 +38,7 @@ parameters:
 definitions:
 
   meta_definition:
+    title: Meta
     description: Meta record describing paginition usw.
     type: object
     properties:
@@ -54,6 +55,7 @@ definitions:
         format: url
 
   info_url_definition:
+    title: Info URL
     description: URL to page with more information
     type: object
     properties:
@@ -72,6 +74,7 @@ definitions:
 
   place:
     type: object
+    title: Place
     description: Places describe physical locations for events and means for contacting these locations. Place definitions come from organizations publishing events (field "publisher") and can thus be slightly different between places sourced from different organizations.
     properties:
       id:
@@ -82,6 +85,7 @@ definitions:
         description: ''
       name:
         type: object
+        description: Name of the place. Properties contain translations 
         properties:
           fi:
             type: string
@@ -94,7 +98,7 @@ definitions:
             description: place name in English
       image:
         type: string
-        description: Image illustrating the event
+        description: URL to image illustrating the event
       origin_id:
         type: string
         description: place identifier in the originating system
@@ -206,7 +210,8 @@ definitions:
         description: ''
 
   keyword:
-    description: Keywords are used to describe events. Keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations.
+    title: Keyword
+    description: Keywords are used to describe events. Linked events uses namespaced keywords in order to support having events from different sources. Namespaces are needed because keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations.
     type: object
     required:
     - id
@@ -261,6 +266,7 @@ definitions:
         description: FIXME(verify) alternative labels for this keyword, no language specified
 
   language:
+    title: Languages supported in this API
     type: object
     description: Every language supported in API has it's name translated to every other supported language. This object contains the translations for one language.
     properties:
@@ -269,7 +275,7 @@ definitions:
         description: Identifier for the language (typically ISO639-1)
       name:
         type: object
-        description: Translation for the language name. Unlikely described here there can be translations to all languages supported by the API, not only the ones listed below.
+        description: Translation for the language name. Properties shown here are examples, it is suggested that every language supported has its name translated to every other language. Users of the API cannot rely on any translations being present.
         properties:
           fi:
             description: Name of the language in Finnish
@@ -282,15 +288,16 @@ definitions:
             type: string
 
   event:
+    title: Events
     type: object
-    description: Describes the actual events. Recurring events are organized into collection events called "super events", which reference "sub events". Super events are normal event objects, with the references to sub event objects contained in "sub_events" property. It is implementation dependent how the grouping of events is done. It might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.
+    description: 'Describes the actual events. Linked events API supports organizing events into hierarchies. This is implemented with collection events called "super events". Super events are normal event objects, with the references to contained events in "sub_events" property. It is implementation dependent how the grouping of events is done. Currently there are two major use cases: events such as "Helsinki Festival", which consists of many events over several weeks and recurring events such as theatrical productions. It should be noted that grouping might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.'
     properties:
       id:
         description: consists of source prefix and source specific identifier
         type: string
         readOnly: true
       location:
-        description: location identifier, references location uri
+        description: structured location identifier, references location uri
         type: string
         readOnly: true
       keywords:
@@ -327,6 +334,7 @@ definitions:
         description: ''
       name:
         type: object
+        description: This is currently generated combining head and secondary headline
         properties:
           fi:
             description: Name of the event in Finnish
@@ -376,6 +384,7 @@ definitions:
         format: date-time
         description: ''
       headline:
+        description: First level description
         type: object
         properties:
           fi:
@@ -385,6 +394,7 @@ definitions:
           en:
             description: English headline for the event        
       secondary_headline:
+        description: Second level description
         type: object
         properties:
           fi:
@@ -404,6 +414,7 @@ definitions:
             description: provider name in English for the event
       location_extra_info:
         type: object
+        description: Unstructured extra info about location (like "eastern door of railway station")
         properties:
           fi:
             description: location extra info in Finnish for the event
@@ -421,7 +432,7 @@ definitions:
         description: ''
       audience:
         type: string
-        description: ''
+        description: Target audience for the event (like social state, age, health). Might refer to keyworda
       lft:
         type: integer
         readOnly: true
@@ -456,6 +467,7 @@ definitions:
         description: ''
 
   offer:
+    title: Price offers
     description: information record for this event. The prices are not in a structured format and the format depends on information source. An exception to this is the case of free event. These are indicated using is_free flag, which is searchable.
     type: object
     properties:
@@ -492,7 +504,8 @@ definitions:
         description: Whether the event is of free admission
   
   eventlink:
-    description: Links to entities that the event publisher considers related to this event. Eg. links to catering service available during theatrical production. The links will likely point to unstructured content
+    title: Links to related information
+    description: Links to entities that the event publisher considers related to this event. Eg. links to catering service available during theatrical production. The links will most likely point to unstructured content, ie. web pages suitable for human viewing.
     type: object
     properties:
       name:
@@ -672,12 +685,12 @@ paths:
         in: query
         type: string
         format: date-time
-        description: Search for events beginning or ending after this time
+        description: Search for events beginning or ending after this time. Dates can be specified using ISO 8601 ("2016-01-12") and additionally "today".
       - name: end
         in: query
         type: string
         format: date-time
-        description: Search for events beginning or ending before this time
+        description: Search for events beginning or ending before this time. Dates can be specified using ISO 8601 ("2016-01-12") and additionally "today".
       - name: bbox
         in: query
         type: array
@@ -779,5 +792,6 @@ paths:
         description: Identifier for the event to be updated
       - name: event_object
         in: body
+        description: Event object that should replace the existing event, note that some implementations may retain unspecified fields at their original values.
         schema:
           $ref: '#/definitions/event'
