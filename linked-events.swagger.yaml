@@ -5,9 +5,16 @@ info:
   title: Linked Events information API
   description: |-
       Linked Events provides categorized data on events and places using JSON-LD format.
-      
+
       Events can be searched by date and location. Location can be exact address or larger
       area such as neighbourhood or burgh
+
+      JSON-LD format is simplified using include mechanism. API users can request that certain
+      fields are included directly into the result, instead of being hyperlinks to objects.
+
+      Several fields are multilingual. These are implemented as object with each language variant
+      as property. In this specification each multilingual field has (fi,sv,en) property triplet as
+      example.
 
   termsOfService: (depends on data provider)
   version: 0.0.1
@@ -57,17 +64,17 @@ definitions:
   place:
     type: object
     title: Place
-    description: Places describe physical locations for events and means for contacting these locations. Place definitions come from organizations publishing events (field "publisher") and can thus be slightly different between places sourced from different organizations.
+    description: Places describe physical locations for events and means for contacting people responsible for these locations. Place definitions come from organizations publishing events (field "publisher") and can thus be slightly different between places sourced from different organizations.
     properties:
       id:
         type: string
         description: Consists of source prefix and source specific identifier
       custom_data:
         type: string
-        description: ''
+        description: Key value field for custom data. FIXME: is there 6Aika-wide use case for this?
       name:
         type: object
-        description: Name of the place. Properties contain translations 
+        description: Name of the place, multilingual
         properties:
           fi:
             type: string
@@ -80,14 +87,14 @@ definitions:
             description: place name in English
       image:
         type: string
-        description: URL to image illustrating the event
+        description: URL to image illustrating the event (FIXME, this will be changed to an object including caption and image URL)
       origin_id:
         type: string
-        description: place identifier in the originating system
+        description: Place identifier in the originating system, format: registy_identifier:place_identifier.
       created_time:
         type: string
         format: date-time
-        description: ''
+        description: Creation time for the place entry. FIXME: is there any use case for this? It's mostly null
       last_modified_time:
         type: string
         format: date-time
@@ -110,6 +117,7 @@ definitions:
             type: string
             format: url
       description:
+        description: Short (? FIXME: perhaps specify recommendation) description of the place, multilingual.
         type: object
         properties:
           fi:
@@ -122,15 +130,14 @@ definitions:
             type: string
             description: place description in English
       position:
-      # FIXME: reference GeoJSON(?) (no official schema available)
-        description: geographic position of the place
+        description: geographic position of the place specified using subset of GeoJSON
         type: object
         properties:
           coordinates:
+            description: coordinates in format specified by type property
             type: array
             items:
               type: number
-            description: coordinates as specified by type property
           type:
             description: interpretation of the coordinates property. Only point is supported in this version
             type: string
@@ -138,11 +145,10 @@ definitions:
             - Point
       email:
         type: string
-        description: Contact email for the event
-      # Telephone would be object per language as well?
+        description: Contact email for the place, note that this is NOT multilingual
       telephone:
         type: object
-        description: Contact phone number for the event
+        description: Contact phone number for the event, multilingual
         properties:
           fi:
             type: string
@@ -155,8 +161,9 @@ definitions:
             description: phone number for English speakers
       contact_type:
         type: string
-        description: ''
+        description: FIXME: this seems unused in Helsinki data. Does any 6Aika city have use for describing contact type?
       street_address:
+        description: Street address for the place, multilingual
         type: object
         properties:
           fi:
@@ -169,6 +176,7 @@ definitions:
             type: string
             description: address in English
       address_locality:
+        description: Describes where the address is located, typically this would be name of the city
         type: object
         properties:
           fi:
@@ -185,19 +193,19 @@ definitions:
         description: FIXME ask Juha!
       postal_code:
         type: string
-        description: Postal code for paper mail
+        description: Postal code of the location (as used by traditional mail)
       post_office_box_num:
         type: string
-        description: PO box in case mail is not delivered to building
+        description: PO box for traditional mail, in case mail is not delivered to the building
       address_country:
         type: string
-        description: Country for paper mail
+        description: Country for the place, NOT multilingual
       deleted:
         type: boolean
         description: This place entry is not used anymore, but old events still reference it. This might be because of duplicate removal.
       data_source:
         type: string
-        description: FIXME ask Juha/Timo. Probably an internal detail for original implementation
+        description: Identifies the source for data, this is specific to API provider. This is useful for API users, as any data quality issues are likely to be specific to data source and workarounds can be applied as such.
       publisher:
         type: string
         description: Organization that provided the event that this place is associated with
@@ -207,7 +215,7 @@ definitions:
 
   keyword:
     title: Keyword
-    description: Keywords are used to describe events. Linked events uses namespaced keywords in order to support having events from different sources. Namespaces are needed because keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations.
+    description: Keywords are used to describe events. Linked events uses namespaced keywords in order to support having events from different sources. Namespaces are needed because keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations. Organization sourcing the keyword can be identified by data_source field. Data_source field will later specify standardized namespaces as well.
     type: object
     required:
     - id
@@ -234,7 +242,7 @@ definitions:
         description: FIXME(verify) An evocative image for the keyword
       origin_id:
         type: string
-        description: FIXME(verify) Identifier for the keyword in the originating system
+        description: Identifier for the keyword in the organization using this keyword. For standardized namespaces this will be a shared identifier.
       created_time:
         type: string
         format: date-time
@@ -248,7 +256,7 @@ definitions:
         description: FIXME(verify) This keyword is an combination of several keywords at source
       data_source:
         type: string
-        description: Source of the keyword
+        description: Source of the keyword, typically API provider specific identifier. Will also be used to specify standardized namespaces as they are brought into use.
       created_by:
         type: string
         description: FIXME(missing)
@@ -264,7 +272,7 @@ definitions:
   language:
     title: Languages supported in this API
     type: object
-    description: Every language supported in API has it's name translated to every other supported language. This object contains the translations for one language.
+    description: Primary purpose of this endpoint is to allow users to identify which languages are supported for multilingual fields. It also has translations for the names of the languages.
     properties:
       id:
         type: string
@@ -286,14 +294,14 @@ definitions:
   event:
     title: Events
     type: object
-    description: 'Describes the actual events. Linked events API supports organizing events into hierarchies. This is implemented with collection events called "super events". Super events are normal event objects, with the references to contained events in "sub_events" property. It is implementation dependent how the grouping of events is done. Currently there are two major use cases: events such as "Helsinki Festival", which consists of many events over several weeks and recurring events such as theatrical productions. It should be noted that grouping might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.'
+    description: 'Describes the actual events. Linked events API supports organizing events into hierarchies. This is implemented with collection events called "super events". Super events are normal event objects, that reference contained events in "sub_events" property. Currently there are two major use cases: events such as "Helsinki Festival", which consist of unique events over a span of time and recurring events such as theatrical productions with multiple showings. It is implementation dependent how the grouping of events is done. It should be noted that grouping might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.'
     properties:
       id:
         description: consists of source prefix and source specific identifier
         type: string
         readOnly: true
       location:
-        description: structured location identifier, references location uri
+        description: structured location identifier, references location object
         type: string
         readOnly: true
       keywords:
@@ -327,7 +335,7 @@ definitions:
         description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series.
       custom_data:
         type: string
-        description: ''
+        description: Key value field for custom data. FIXME: is there 6Aika-wide use case for this?
       name:
         type: object
         description: This is currently generated combining head and secondary headline
@@ -570,6 +578,13 @@ paths:
     get:
       summary: Returns list of places used for describing events
       operationId: place_list
+      parameters:
+        - name: event.data_source
+          in: query
+          type: string
+          description: Only return keywords that are associated with an event by this data source.
+        - $ref: '#/parameters/page_param'
+        - $ref: '#/parameters/pagesize_param'
       responses:
         200:
           description: List of places
@@ -707,7 +722,7 @@ paths:
         type: array
         items:
           type: string
-        description: Embed in response expanded versions data fields specified with this parameter, otherwise many fields are references
+        description: Embed reference-type fields specified directly into the response, otherwise they are provided as URI references
       - name: publisher
         in: query
         type: string
