@@ -617,7 +617,7 @@ definitions:
 paths:
   /keyword/:
     get:
-      summary: Returns list of keywords used for describing events
+      summary: Returns a list of keywords used for describing events
       description: |
         keyword endpoint returns places connected with events. What this means is that nearly all filtering is applied to events. Response then contains those keywords that are associated with the events that have passed filters.
 
@@ -689,12 +689,24 @@ paths:
       description: place endpoint returns places connected with events. What this means is that all filtering is applied to events. Response then contains those places that host the events that have passed filters.
       operationId: place_list
       parameters:
-        - name: data_source
-          in: query
-          type: string
-          description: Only return keywords that are associated with an event by this data source.
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
+        - name: show_all_places
+          in: query
+          type: boolean
+          description: 'Show all places, including those that are not hosting any events. Otherwise such keywords are hidden. When show_all_places is specified, no other filter is applied.'
+        - $ref: '#/parameters/event_text_param'
+        - $ref: '#/parameters/event_last_modified_param'
+        - $ref: '#/parameters/event_start_param'
+        - $ref: '#/parameters/event_end_param'
+        - $ref: '#/parameters/event_bbox_param'
+        - $ref: '#/parameters/event_location_param'
+        - $ref: '#/parameters/event_keyword_param'
+        - $ref: '#/parameters/event_recurring_param'
+        - $ref: '#/parameters/event_min_duration_param'
+        - $ref: '#/parameters/event_max_duration_param'
+        - $ref: '#/parameters/event_organization_param'
+
       responses:
         200:
           description: List of places
