@@ -450,7 +450,7 @@ definitions:
         description: ''
       audience:
         type: string
-        description: Target audience for the event (like social state, age, health). Might refer to keywords
+        description: Target audience for the event (like social state, age, health). References a special subset of keywords
       data_source:
         type: string
         description: ''
