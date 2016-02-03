@@ -49,11 +49,11 @@ parameters:
     type: array
     items:
       type: string
-    description: Embed given reference-type fields specified directly into the response, otherwise they are provided as URI references
+    description: Embed given reference-type fields directly into the response, otherwise they are returned as URI references.
   event_text_param:
     name: text
     in: query
-    description: Search (case insensitive) through all multilingual text fields (name, description, short_description, info_url) of an event (every language). Multilingual fields contain the text that users are expected to case about, thus multilinguality is useful discriminator
+    description: Search (case insensitive) through all multilingual text fields (name, description, short_description, info_url) of an event (every language). Multilingual fields contain the text that users are expected to care about, thus multilinguality is useful discriminator.
     required: false
     type: string
   event_last_modified_param:
@@ -546,7 +546,7 @@ definitions:
         description: FIXME(verify) Which API user created this keyword
       last_modified_by:
         type: string
-        description: FIXME(verify) Which API user most recently edited this keywords
+        description: FIXME(verify) Which API user most recently edited this keyword
       publisher:
         type: string
         description: Organization responsible for this event record.
@@ -650,7 +650,7 @@ paths:
     get:
       summary: Returns a list of keywords used for describing events
       description: |
-        keyword endpoint returns places connected with events. What this means is that nearly all filtering is applied to events. Response then contains those keywords that are associated with the events that have passed filters. Exceptions to this are marked.
+        keyword endpoint returns keywords connected with events. What this means is that nearly all filtering is applied to events. Response then contains those keywords that are associated with the events that have passed filters. Exceptions to this are marked.
       operationId: keyword_list
       parameters:
         - $ref: '#/parameters/page_param'
