@@ -30,6 +30,16 @@ schemes:
 produces:
   - application/json
 
+tags:
+  - name: event
+    description: Search and Edit events
+  - name: filter
+    description: Search for keywords and places for filtering events
+  - name: search
+    description: Fulltext search through events
+  - name: language
+    description: Get supported languages
+
 parameters:
   page_param:
     name: page
@@ -674,6 +684,8 @@ paths:
       summary: Search through events or return completition suggestions
       description: search endpoint is for searching through events, returning events matching the given search terms.
       operationId: event_search
+      tags:
+      - search
       parameters:
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
@@ -704,6 +716,8 @@ paths:
       description: |
         keyword endpoint returns keywords connected with events. What this means is that nearly all filtering is applied to events. Response then contains those keywords that are associated with the events that have passed filters. Exceptions to this are marked.
       operationId: keyword_list
+      tags:
+      - filter
       parameters:
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
@@ -750,6 +764,8 @@ paths:
     get:
       summary: Return information for single keyword
       operationId: keyword_retrieve
+      tags:
+      - filter
       responses:
         200:
           description: Keyword record
@@ -767,6 +783,8 @@ paths:
       summary: Return as list of keywordsets for grouping keywords
       description: Unlike other endpoints, keywordsets do not support filtering. It is expected that the full result set will remain small enough.
       operationId: keywordset_list
+      tags:
+      - filter
       parameters:
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
@@ -788,6 +806,8 @@ paths:
     get:
       summary: Return information about single keywordset
       operationId: keywordset_retrieve
+      tags:
+      - filter
       parameters:
         - type: string
           description: Same as id in keywordset schema
@@ -805,6 +825,8 @@ paths:
       summary: Returns list of places used for describing events
       description: place endpoint returns places connected with events. What this means is that all filtering is applied to events. Response then contains those places that host the events that have passed filters. Exceptions to this are marked.
       operationId: place_list
+      tags:
+      - filter
       parameters:
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
@@ -842,6 +864,8 @@ paths:
     get:
       summary: Return information for single place
       operationId: place_retrieve
+      tags:
+      - filter
       responses:
         200:
           description: Place record
@@ -859,6 +883,8 @@ paths:
       summary: Return a list of languages used for describing events
       description: The returned list describes languages used for describing events in this Linked events instance
       operationId: language_list
+      tags:
+      - language
       responses:
         200:
           description: Language list
@@ -877,6 +903,8 @@ paths:
       summary: Return information for single language
       description: Can be used to retrieve translations for a single language
       operationId: language_retrieve
+      tags:
+      - language
       responses:
         200:
           description: Language record
@@ -931,6 +959,8 @@ paths:
         <p><a href="?include=location,keywords" title="json">See the result</a></p>
         <h2 id="response-data-for-the-current-url">Response data for the current URL</h2>
       operationId: Event_list
+      tags:
+      - event
       responses:
         200:
           description: List of events
@@ -956,6 +986,8 @@ paths:
     post:
       summary: Create a new event
       operationId: event_create
+      tags:
+      - event
       responses:
         201:
           description: Object has been succesfully created. A copy of the object is returned in response body and headers contain Location pointing to the created event
@@ -977,6 +1009,8 @@ paths:
     get:
       summary: Retrieve single event by id
       operationId: event_retrieve
+      tags:
+      - event
       responses:
         200:
           description: Single event object
@@ -992,6 +1026,8 @@ paths:
       summary: Update an event
       description: Events can be updated if the user has appropriate access permissions. The original implementation behaves like PATCH, ie. if some field is left out from the PUT call, its value is retained in database. In order to ensure consistent behaviour, users should always supply every field in PUT call.
       operationId: event_update
+      tags:
+      - event
       responses:
         200:
           description: Event has been succesfully replaced
