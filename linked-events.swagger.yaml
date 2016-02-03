@@ -356,6 +356,58 @@ definitions:
           type: string
         description: FIXME(verify) alternative labels for this keyword, no language specified. Use case?
 
+  keywordset:
+      title: Keyword set
+      description: Keyword sets are used to group keywords together into classification groups. For example, one set of keywords might describe themes used by an event provider and another could be used to describe audience groups.
+      type: object
+      required:
+      - id
+      - name
+      - keywords
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this keywordset. These should be URIs identifying the source and the keywordset itself, and preferably also well formed http-URLs pointing to more information about the keyword.
+        name:
+          type: string
+          description: Name for this keywordset. This should be human readable, such that it could be shown as label in UI
+        origin_id:
+          type: string
+          description: 'Set identifier in the originating system, if any'
+        created_time:
+          type: string
+          format: date-time
+          description: Time when this keywordset was created (ISO 8601)
+        last_modified_time:
+          type: string
+          format: date-time
+          description: Time when this keywordset was last modified (ISO 8601)
+        data_source:
+          type: string
+          description: Unique identifier (URI)for the system where this keywordset originated, if any
+        last_modified_by:
+          type: string
+          description: FIXME(verify) Which API user most recently edited this keyword
+        usage:
+          type: string
+          description: 'Usage type for this keywordset. These are allow UIs to show the set in appropriate place. FIXME: set of types is not finalized by any stretch'
+          enum:
+          - any
+          - keyword
+          - audience
+        organization:
+          type: string
+          description: Organization that has defined this keywordset
+        keywords:
+          type: array
+          description: Keywords that belong to this keywordset
+          items:
+            type: object
+            properties:
+              '@id':
+                type: string
+                format: url
+                description: Reference to the keyword itself. Include mechanism can be used to extend this.
   language:
     title: Languages supported in this API
     type: object
@@ -710,6 +762,44 @@ paths:
         name: id
         required: true
         
+  /keywordset/:
+    get:
+      summary: Return as list of keywordsets for grouping keywords
+      description: Unlike other endpoints, keywordsets do not support filtering. It is expected that the full result set will remain small enough.
+      operationId: keywordset_list
+      parameters:
+        - $ref: '#/parameters/page_param'
+        - $ref: '#/parameters/pagesize_param'
+        - $ref: '#/parameters/include_param'
+      responses:
+        200:
+          description: List of keywordsets
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/keyword'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/keywordset'
+
+  /keywordset/{id}:
+    get:
+      summary: Return information about single keywordset
+      operationId: keywordset_retrieve
+      parameters:
+        - type: string
+          description: Same as id in keywordset schema
+          in: path
+          name: id
+          required: true
+      responses:
+        200:
+          description: Keywordset record
+          schema:
+            $ref: '#/definitions/keywordset'
+
   /place/:
     get:
       summary: Returns list of places used for describing events
