@@ -17,12 +17,12 @@ info:
       example.
 
   termsOfService: (depends on data provider)
-  version: DRAFT
+  version: v1
 
 # Helsinki implementation is ok for seeing how API works. It has extra fields and endpoints
 # compared to this specification
 host: api.hel.fi
-basePath: /linkedevents/v0.1
+basePath: /linkedevents/v1
 
 schemes:
   - http
@@ -39,6 +39,8 @@ tags:
     description: Fulltext search through events
   - name: language
     description: Get supported languages
+  - name: image
+    description: Get and upload images
 
 parameters:
   page_param:
@@ -184,10 +186,10 @@ definitions:
           en:
             type: string
             description: place name in English
-      image:
-        type: string
-        format: url
-        description: URL to image illustrating the event (FIXME, this will be changed to an object including caption and image URL)
+      images:
+        type: array
+        items:
+          "$ref": '#/definitions/image'
       origin_id:
         type: string
         description: 'Place identifier in the originating system, these should be in same format as id but variations are more likely than with id.'
@@ -310,6 +312,50 @@ definitions:
         type: string
         description: Organization that provided the event that this place is associated with
 
+  image:
+    title: Image
+    description: Images are used as pictures for events, places and organizers. 
+    type: object
+    required:
+    - image or url
+    properties:
+      name:
+        type: object
+        properties:
+          fi:
+            type: string
+            description: Image description in Finnish
+          sv:
+            type: string
+            description: Image description in Swedish
+          en:
+            type: string
+            description: Image description in English
+      publisher:
+        type: string
+        description: The organization responsible for the image.
+      created_time:
+        type: string
+        format: date-time
+        description: 'Creation time for the image.'
+      last_modified_time:
+        type: string
+        format: date-time
+        description: 'Time this image was modified in the datastore behind the API (not necessarily in the originating system)'
+      created_by:
+        type: url
+        description: URL reference to the user that created this record (user endpoint)
+      last_modified_by:
+        type: url
+        description: URL reference to the user that last modfied this record (user endpoint)
+      url:
+        type: url
+        description: The image file URL.
+      cropping:
+        type: string
+        description: Cropping data for the image.
+
+
   keyword:
     title: Keyword
     description: Keywords are used to describe events. Linked events uses namespaced keywords in order to support having events from different sources. Namespaces are needed because keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations. Organization sourcing the keyword can be identified by data_source field. Data_source field will later specify standardized namespaces as well.
@@ -334,9 +380,10 @@ definitions:
           en:
             type: string
             description: Keyword in English
-      image:
-        type: string
-        description: FIXME(verify) An evocative image for the keyword
+      images:
+        type: array
+        items:
+          "$ref": '#/definitions/image'
       origin_id:
         type: string
         description: Identifier for the keyword in the organization using this keyword. For standardized namespaces this will be a shared identifier.
@@ -418,6 +465,7 @@ definitions:
                 type: string
                 format: url
                 description: Reference to the keyword itself. Include mechanism can be used to extend this.
+  
   language:
     title: Languages supported in this API
     type: object
@@ -449,14 +497,12 @@ definitions:
         description: consists of source prefix and source specific identifier. These should be URIs uniquely identifying the event, and preferably also well formed http-URLs pointing to more information about the event.
         type: string
       location:
-        description: structured location identifier, references location object
-        type: string
+        "$ref": '#/definitions/image'
       keywords:
         description: array of keyword uri references
         type: array
         items:
-          type: string
-          format: uri
+          "$ref": '#/definitions/image'
       super_event:
         description: references the aggregate event containing this event
         type: string
@@ -479,8 +525,8 @@ definitions:
           type: string
         description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series.
       custom_data:
-        type: string
-        description: 'Key value field for custom data. FIXME: is there 6Aika-wide use case for this?'
+        type: dictionary
+        description: 'Key value field for organization-specific custom data.'
       name:
         type: object
         description: 'Short descriptive name for the event, recommended limit: 80 characters'
@@ -494,10 +540,10 @@ definitions:
           en:
             description: Name of the event in English
             type: string
-      image:
-        type: string
-        format: url
-        description: URL pointing to an image illustrating the event
+      images:
+        type: array
+        items:
+          "$ref": '#/definitions/image'
       origin_id:
         type: string
         description: 'Event identifier in the originating system, these should be in same format as id but variations are more likely than with id.'
@@ -612,6 +658,7 @@ definitions:
       publisher:
         type: string
         description: Organization responsible for this event record.
+
   offer:
     title: Price offers
     description: information record for this event. The prices are not in a structured format and the format depends on information source. An exception to this is the case of free event. These are indicated using is_free flag, which is searchable.
