@@ -317,7 +317,7 @@ definitions:
     description: Images are used as pictures for events, places and organizers. 
     type: object
     required:
-    - image or url
+    - url
     properties:
       name:
         type: object
@@ -343,13 +343,13 @@ definitions:
         format: date-time
         description: 'Time this image was modified in the datastore behind the API (not necessarily in the originating system)'
       created_by:
-        type: url
+        type: string
         description: URL reference to the user that created this record (user endpoint)
       last_modified_by:
-        type: url
+        type: string
         description: URL reference to the user that last modfied this record (user endpoint)
       url:
-        type: url
+        type: string
         description: The image file URL.
       cropping:
         type: string
@@ -465,7 +465,6 @@ definitions:
                 type: string
                 format: url
                 description: Reference to the keyword itself. Include mechanism can be used to extend this.
-  
   language:
     title: Languages supported in this API
     type: object
@@ -497,12 +496,14 @@ definitions:
         description: consists of source prefix and source specific identifier. These should be URIs uniquely identifying the event, and preferably also well formed http-URLs pointing to more information about the event.
         type: string
       location:
-        "$ref": '#/definitions/image'
+        description: structured location identifier, references location object
+        type: string
       keywords:
         description: array of keyword uri references
         type: array
         items:
-          "$ref": '#/definitions/image'
+          type: string
+          format: uri
       super_event:
         description: references the aggregate event containing this event
         type: string
@@ -525,8 +526,8 @@ definitions:
           type: string
         description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series.
       custom_data:
-        type: dictionary
-        description: 'Key value field for organization-specific custom data.'
+        type: string
+        description: 'Key value field for custom data. FIXME: is there 6Aika-wide use case for this?'
       name:
         type: object
         description: 'Short descriptive name for the event, recommended limit: 80 characters'
@@ -658,7 +659,6 @@ definitions:
       publisher:
         type: string
         description: Organization responsible for this event record.
-
   offer:
     title: Price offers
     description: information record for this event. The prices are not in a structured format and the format depends on information source. An exception to this is the case of free event. These are indicated using is_free flag, which is searchable.
