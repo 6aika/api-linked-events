@@ -757,6 +757,50 @@ paths:
                 items:
                   $ref: '#/definitions/event'
 
+  /image/:
+    get:
+      summary: Returns a list of images
+      description: |
+        Image endpoint returns images that are used for events, places or organizers.
+      operationId: image_list
+      tags:
+      - image
+      parameters:
+        - $ref: '#/parameters/page_param'
+        - $ref: '#/parameters/pagesize_param'
+        - $ref: '#/parameters/include_param'
+
+      responses:
+        200:
+          description: List of images
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/meta_definition'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/image'
+
+  /image/{id}/:
+    get:
+      summary: Return information for single image
+      operationId: image_retrieve
+      tags:
+      - image
+      responses:
+        200:
+          description: Image record
+          schema:
+            $ref: '#/definitions/image'
+      parameters:
+      - type: string
+        description: The id for the image
+        in: path
+        name: id
+        required: true
+
   /keyword/:
     get:
       summary: Returns a list of keywords used for describing events
