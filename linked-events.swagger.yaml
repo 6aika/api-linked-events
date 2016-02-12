@@ -545,9 +545,6 @@ definitions:
         type: array
         items:
           "$ref": '#/definitions/image'
-      origin_id:
-        type: string
-        description: 'Event identifier in the originating system, these should be in same format as id but variations are more likely than with id.'
       created_time:
         type: string
         format: date-time
@@ -595,27 +592,7 @@ definitions:
       date_published:
         type: string
         format: date-time
-        description: Date this event is free to be published
-      headline:
-        description: First level description. DEPRECATED, do not use.
-        type: object
-        properties:
-          fi:
-            description: Finnish headline for the event
-          se:
-            description: Swedish headline for the event
-          en:
-            description: English headline for the event        
-      secondary_headline:
-        description: Second level description. DEPRECATED, do not use.
-        type: object
-        properties:
-          fi:
-            description: secondary Finnish headline for the event
-          se:
-            description: secondary Swedish headline for the event
-          en:
-            description: secondary English headline for the event        
+        description: Date this event is free to be published      
       provider:
         type: object
         description: organization responsible for the practical implementation of the event
