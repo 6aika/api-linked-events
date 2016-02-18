@@ -700,25 +700,32 @@ definitions:
 paths:
   /search/:
     get:
-      summary: Search through events or return completition suggestions
-      description: search endpoint is for searching through events, returning events matching the given search terms.
+      summary: Search through events and places
+      description: Search endpoint is for searching through events and places, returning resources that match the given search criteria. The resource type (Event or Place) is returned in the `resource_type` attribute. The results are sorted by relevancy score. If no time filter (`start` or `end`) is supplied, the relevancy score will decay over time so that events that are closer to today will get a higher score.
       operationId: event_search
       tags:
       - search
       parameters:
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
+        - name: type
+          in: query
+          type: string
+          description: Comma-delimited list of resource types to search for. Currently allowed values are `event` and `place`.
         - name: q
           in: query
           type: string
-          description: Search for events matching this string. Mutually exclusive with "input"-autocompletition search
+          description: Search for events matching this string. Mutually exclusive with `input` typeahead search.
         - name: input
           in: query
           type: string
-          description: Return autocompletition suggestions for this string. Mutually exclusive with "q"-search
+          description: Return autocompletition suggestions for this string. Mutually exclusive with `q` full-text search.
+        - $ref: '#/parameters/event_start_param'
+        - $ref: '#/parameters/event_end_param'
+
       responses:
         200:
-          description: List of events
+          description: List of resources
           schema:
             type: object
             properties:
