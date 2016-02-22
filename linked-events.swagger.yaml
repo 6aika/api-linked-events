@@ -7,7 +7,7 @@ info:
       Linked Events provides categorized data on events and places using JSON-LD format.
 
       Events can be searched by date and location. Location can be exact address or larger
-      area such as neighbourhood or burgh
+      area such as neighbourhood or borough
 
       JSON-LD format is streamlined using include mechanism. API users can request that certain
       fields are included directly into the result, instead of being hyperlinks to objects.
@@ -17,12 +17,12 @@ info:
       example.
 
   termsOfService: (depends on data provider)
-  version: DRAFT
+  version: v1
 
 # Helsinki implementation is ok for seeing how API works. It has extra fields and endpoints
 # compared to this specification
 host: api.hel.fi
-basePath: /linkedevents/v0.1
+basePath: /linkedevents/v1
 
 schemes:
   - http
@@ -39,6 +39,8 @@ tags:
     description: Fulltext search through events
   - name: language
     description: Get supported languages
+  - name: image
+    description: Get and upload images
 
 parameters:
   page_param:
@@ -184,10 +186,10 @@ definitions:
           en:
             type: string
             description: place name in English
-      image:
-        type: string
-        format: url
-        description: URL to image illustrating the event (FIXME, this will be changed to an object including caption and image URL)
+      images:
+        type: array
+        items:
+          "$ref": '#/definitions/image'
       origin_id:
         type: string
         description: 'Place identifier in the originating system, these should be in same format as id but variations are more likely than with id.'
@@ -310,6 +312,50 @@ definitions:
         type: string
         description: Organization that provided the event that this place is associated with
 
+  image:
+    title: Image
+    description: Images are used as pictures for events, places and organizers. 
+    type: object
+    required:
+    - url
+    properties:
+      name:
+        type: object
+        properties:
+          fi:
+            type: string
+            description: Image description in Finnish
+          sv:
+            type: string
+            description: Image description in Swedish
+          en:
+            type: string
+            description: Image description in English
+      publisher:
+        type: string
+        description: The organization responsible for the image.
+      created_time:
+        type: string
+        format: date-time
+        description: 'Creation time for the image.'
+      last_modified_time:
+        type: string
+        format: date-time
+        description: 'Time this image was modified in the datastore behind the API (not necessarily in the originating system)'
+      created_by:
+        type: string
+        description: URL reference to the user that created this record (user endpoint)
+      last_modified_by:
+        type: string
+        description: URL reference to the user that last modfied this record (user endpoint)
+      url:
+        type: string
+        description: The image file URL.
+      cropping:
+        type: string
+        description: Cropping data for the image.
+
+
   keyword:
     title: Keyword
     description: Keywords are used to describe events. Linked events uses namespaced keywords in order to support having events from different sources. Namespaces are needed because keywords are defined by the organization sourcing the events and can therefore overlap in meaning. Conversely the meaning of same keyword can vary between organizations. Organization sourcing the keyword can be identified by data_source field. Data_source field will later specify standardized namespaces as well.
@@ -334,9 +380,10 @@ definitions:
           en:
             type: string
             description: Keyword in English
-      image:
-        type: string
-        description: FIXME(verify) An evocative image for the keyword
+      images:
+        type: array
+        items:
+          "$ref": '#/definitions/image'
       origin_id:
         type: string
         description: Identifier for the keyword in the organization using this keyword. For standardized namespaces this will be a shared identifier.
@@ -366,7 +413,7 @@ definitions:
           type: string
         description: FIXME(verify) alternative labels for this keyword, no language specified. Use case?
 
-  keywordset:
+  keyword_set:
       title: Keyword set
       description: Keyword sets are used to group keywords together into classification groups. For example, one set of keywords might describe themes used by an event provider and another could be used to describe audience groups.
       type: object
@@ -377,47 +424,42 @@ definitions:
       properties:
         id:
           type: string
-          description: Unique identifier for this keywordset. These should be URIs identifying the source and the keywordset itself, and preferably also well formed http-URLs pointing to more information about the keyword.
+          description: Unique identifier for this keyword_set. These should be URIs identifying the source and the keyword_set itself, and preferably also well formed http-URLs pointing to more information about the keyword.
         name:
           type: string
-          description: Name for this keywordset. This should be human readable, such that it could be shown as label in UI
+          description: Name for this keyword_set. This should be human readable, such that it could be shown as label in UI
         origin_id:
           type: string
           description: 'Set identifier in the originating system, if any'
         created_time:
           type: string
           format: date-time
-          description: Time when this keywordset was created (ISO 8601)
+          description: Time when this keyword_set was created (ISO 8601)
         last_modified_time:
           type: string
           format: date-time
-          description: Time when this keywordset was last modified (ISO 8601)
+          description: Time when this keyword_set was last modified (ISO 8601)
         data_source:
           type: string
-          description: Unique identifier (URI)for the system where this keywordset originated, if any
+          description: Unique identifier (URI)for the system where this keyword_set originated, if any
         last_modified_by:
           type: string
           description: FIXME(verify) Which API user most recently edited this keyword
         usage:
           type: string
-          description: 'Usage type for this keywordset. These are allow UIs to show the set in appropriate place. FIXME: set of types is not finalized by any stretch'
+          description: 'Usage type for this keyword_set. These are allow UIs to show the set in appropriate place. FIXME: set of types is not finalized by any stretch'
           enum:
           - any
           - keyword
           - audience
         organization:
           type: string
-          description: Organization that has defined this keywordset
+          description: Organization that has defined this keyword_set
         keywords:
           type: array
-          description: Keywords that belong to this keywordset
+          description: Keywords that belong to this keyword_set
           items:
-            type: object
-            properties:
-              '@id':
-                type: string
-                format: url
-                description: Reference to the keyword itself. Include mechanism can be used to extend this.
+            "$ref": '#/definitions/keyword'
   language:
     title: Languages supported in this API
     type: object
@@ -449,8 +491,7 @@ definitions:
         description: consists of source prefix and source specific identifier. These should be URIs uniquely identifying the event, and preferably also well formed http-URLs pointing to more information about the event.
         type: string
       location:
-        description: structured location identifier, references location object
-        type: string
+        "$ref": '#/definitions/place'
       keywords:
         description: array of keyword uri references
         type: array
@@ -494,13 +535,10 @@ definitions:
           en:
             description: Name of the event in English
             type: string
-      image:
-        type: string
-        format: url
-        description: URL pointing to an image illustrating the event
-      origin_id:
-        type: string
-        description: 'Event identifier in the originating system, these should be in same format as id but variations are more likely than with id.'
+      images:
+        type: array
+        items:
+          "$ref": '#/definitions/image'
       created_time:
         type: string
         format: date-time
@@ -548,27 +586,7 @@ definitions:
       date_published:
         type: string
         format: date-time
-        description: Date this event is free to be published
-      headline:
-        description: First level description. DEPRECATED, do not use.
-        type: object
-        properties:
-          fi:
-            description: Finnish headline for the event
-          se:
-            description: Swedish headline for the event
-          en:
-            description: English headline for the event        
-      secondary_headline:
-        description: Second level description. DEPRECATED, do not use.
-        type: object
-        properties:
-          fi:
-            description: secondary Finnish headline for the event
-          se:
-            description: secondary Swedish headline for the event
-          en:
-            description: secondary English headline for the event        
+        description: Date this event is free to be published      
       provider:
         type: object
         description: organization responsible for the practical implementation of the event
@@ -598,8 +616,9 @@ definitions:
         format: date-time
         description: Time the event will end
       audience:
-        type: string
-        description: Target audience for the event (like social state, age, health). References a special subset of keywords
+        type: array
+        items:
+          "$ref": '#/definitions/keyword'
       data_source:
         type: string
         description: Unique identifier (URI)for the system from which this event came from, preferably URL with more information about the system and its policies
@@ -717,6 +736,50 @@ paths:
                 items:
                   $ref: '#/definitions/event'
 
+  /image/:
+    get:
+      summary: Returns a list of images
+      description: |
+        Image endpoint returns images that are used for events, places or organizers.
+      operationId: image_list
+      tags:
+      - image
+      parameters:
+        - $ref: '#/parameters/page_param'
+        - $ref: '#/parameters/pagesize_param'
+        - $ref: '#/parameters/include_param'
+
+      responses:
+        200:
+          description: List of images
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/meta_definition'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/image'
+
+  /image/{id}/:
+    get:
+      summary: Return information for single image
+      operationId: image_retrieve
+      tags:
+      - image
+      responses:
+        200:
+          description: Image record
+          schema:
+            $ref: '#/definitions/image'
+      parameters:
+      - type: string
+        description: The id for the image
+        in: path
+        name: id
+        required: true
+
   /keyword/:
     get:
       summary: Returns a list of keywords used for describing events
@@ -785,11 +848,11 @@ paths:
         name: id
         required: true
         
-  /keywordset/:
+  /keyword_set/:
     get:
-      summary: Return as list of keywordsets for grouping keywords
-      description: Unlike other endpoints, keywordsets do not support filtering. It is expected that the full result set will remain small enough.
-      operationId: keywordset_list
+      summary: Return as list of keyword_sets for grouping keywords
+      description: Unlike other endpoints, keyword_sets do not support filtering. It is expected that the full result set will remain small enough.
+      operationId: keyword_set_list
       tags:
       - filter
       parameters:
@@ -798,7 +861,7 @@ paths:
         - $ref: '#/parameters/include_param'
       responses:
         200:
-          description: List of keywordsets
+          description: List of keyword_sets
           schema:
             type: object
             properties:
@@ -807,25 +870,25 @@ paths:
               data:
                 type: array
                 items:
-                  $ref: '#/definitions/keywordset'
+                  $ref: '#/definitions/keyword_set'
 
-  /keywordset/{id}:
+  /keyword_set/{id}:
     get:
-      summary: Return information about single keywordset
-      operationId: keywordset_retrieve
+      summary: Return information about single keyword_set
+      operationId: keyword_set_retrieve
       tags:
       - filter
       parameters:
         - type: string
-          description: Same as id in keywordset schema
+          description: Same as id in keyword_set schema
           in: path
           name: id
           required: true
       responses:
         200:
-          description: Keywordset record
+          description: Keyword_set record
           schema:
-            $ref: '#/definitions/keywordset'
+            $ref: '#/definitions/keyword_set'
 
   /place/:
     get:
