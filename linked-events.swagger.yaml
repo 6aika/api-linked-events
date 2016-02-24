@@ -761,6 +761,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/definitions/image'
+    
+    post:
+      summary: Create a new image
+      operationId: image_create
+      description: There are two ways to create an image object. The image file can be posted as a multipart request, but the endpoint also accepts a simple JSON object with an external url in the url field. This allows using external images for events without saving them on the API server.
+      tags:
+      - image
+      consumes:
+      - multipart/form-data
+      responses:
+        201:
+          description: Object has been succesfully created. A copy of the object is returned in response body and headers contain Location pointing to the created event
+          schema:
+            $ref: '#/definitions/image'
+        400:
+          description: Input format was not correct, eg. mandatory field was missing or JSON was malformed
+        401:
+          description: User was not authenticated
+        403:
+          description: User does not have necessary permissions
+      parameters:
+      - name: image_file
+        in: formData
+        type: file
 
   /image/{id}/:
     get:
@@ -779,6 +803,35 @@ paths:
         in: path
         name: id
         required: true
+    put:
+      summary: Update an image
+      description: Images can be updated if the user has appropriate access permissions. The original implementation behaves like PATCH, ie. if some field is left out from the PUT call, its value is retained in database. In order to ensure consistent behaviour, users should always supply every field in PUT call.
+      operationId: image_update
+      tags:
+      - image
+      responses:
+        200:
+          description: Image has been succesfully replaced
+          schema:
+            $ref: '#/definitions/image'
+        400:
+          description: Input format was not correct, eg. mandatory field was missing or JSON was malformed
+        401:
+          description: User was not authenticated
+        403:
+          description: User does not have necessary permissions
+      parameters:
+      - type: string
+        in: path
+        name: id
+        required: true
+        description: Identifier for the image to be updated
+      - name: image_object
+        in: body
+        description: Image object that should replace the existing image, note that some implementations may retain unspecified fields at their original values.
+        schema:
+          $ref: '#/definitions/image'    
+    
 
   /keyword/:
     get:
