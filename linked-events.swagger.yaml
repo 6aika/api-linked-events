@@ -36,7 +36,7 @@ tags:
   - name: filter
     description: Search for keywords and places for filtering events
   - name: search
-    description: Fulltext search through events
+    description: Fulltext search through events and places
   - name: language
     description: Get supported languages
   - name: image
@@ -701,7 +701,7 @@ paths:
   /search/:
     get:
       summary: Search through events and places
-      description: Search endpoint is for searching through events and places, returning resources that match the given search criteria. The resource type (Event or Place) is returned in the `resource_type` attribute. The results are sorted by relevancy score. If no time filter (`start` or `end`) is supplied, the relevancy score will decay over time so that events that are closer to today will get a higher score.
+      description: Search endpoint is for searching through events and places, returning resources that contain the given text. `type=event` must be specified to filter events by time. The resource type (Event or Place) is returned in the `resource_type` attribute. If `type=events` is specified, `start` and `end` will filter events by date, and the results are sorted by relevancy score. If no time filter (`start` or `end`) is supplied, the relevancy score will decay over time so that events that are closer to today will get a higher score.
       operationId: event_search
       tags:
       - search
@@ -711,11 +711,11 @@ paths:
         - name: type
           in: query
           type: string
-          description: Comma-delimited list of resource types to search for. Currently allowed values are `event` and `place`.
+          description: Comma-delimited list of resource types to search for. Currently allowed values are `event` and `place`. `type=event` must be specified for event date filtering and relevancy sorting.
         - name: q
           in: query
           type: string
-          description: Search for events matching this string. Mutually exclusive with `input` typeahead search.
+          description: Search for events and places matching this string. Mutually exclusive with `input` typeahead search.
         - name: input
           in: query
           type: string
