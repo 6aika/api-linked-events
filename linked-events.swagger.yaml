@@ -701,7 +701,7 @@ paths:
   /search/:
     get:
       summary: Search through events and places
-      description: Search endpoint is for searching through events and places, returning resources that contain the given text. `type=event` must be specified to filter events by time. The resource type (Event or Place) is returned in the `resource_type` attribute. If `type=events` is specified, `start` and `end` will filter events by date, and the results are sorted by relevancy score. If no time filter (`start` or `end`) is supplied, the relevancy score will decay over time so that events that are closer to today will get a higher score.
+      description: Search endpoint is for searching through events and places, returning resources that contain the given text. `type=event` must be specified to filter events by time. The resource type (Event or Place) is returned in the `resource_type` attribute. If `type=event` is specified, `start` and `end` will filter events by date, and the results are sorted by relevancy score. If no time filter (`start` or `end`) is supplied, the relevancy score will decay over time so that events that are closer to today will get a higher score.
       operationId: event_search
       tags:
       - search
