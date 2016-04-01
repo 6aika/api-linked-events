@@ -135,6 +135,11 @@ parameters:
     in: query
     type: string
     description: Search for events that have given organization as source
+  event_sort_param:
+    name: sort
+    in: query
+    type: string
+    description: Sort the returned events in the given order. Possible sorting criteria are 'start_time', 'end_time', 'days_left' and 'last_modified_time'. The default ordering is '-last_modified_time'.
 
 definitions:
 
@@ -1105,6 +1110,7 @@ paths:
       - $ref: '#/parameters/event_min_duration_param'
       - $ref: '#/parameters/event_max_duration_param'
       - $ref: '#/parameters/event_organization_param'
+      - $ref: '#/parameters/event_sort_param'
 
     post:
       summary: Create a new event
