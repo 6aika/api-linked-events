@@ -164,6 +164,9 @@ definitions:
     type: object
     title: Place
     description: Places describe physical locations for events and means for contacting people responsible for these locations. Place definitions come from organizations publishing events (field "publisher") and can thus have slightly different semantics between places sourced from different organizations.
+    required:
+    - name
+    - position
     properties:
       id:
         type: string
@@ -469,6 +472,9 @@ definitions:
     title: Languages supported in this API
     type: object
     description: Primary purpose of this endpoint is to allow users to identify which languages are supported for multilingual fields. It also has translations for the names of the languages.
+    required:
+    - id
+    - name
     properties:
       id:
         type: string
@@ -491,6 +497,12 @@ definitions:
     title: Events
     type: object
     description: 'Describes the actual events. Linked events API supports organizing events into hierarchies. This is implemented with collection events called "super events". Super events are normal event objects, that reference contained events in "sub_events" property. Currently there are two major use cases: events such as "Helsinki Festival", which consist of unique events over a span of time and recurring events such as theatrical productions with multiple showings. It is implementation dependent how the grouping of events is done. It should be noted that grouping might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.'
+    required:
+    - name
+    - location
+    - start_time
+    - keywords
+    - publication_status
     properties:
       id:
         description: consists of source prefix and source specific identifier. These should be URIs uniquely identifying the event, and preferably also well formed http-URLs pointing to more information about the event.
@@ -509,6 +521,9 @@ definitions:
       event_status:
         type: string
         description: As defined in schema.org/Event. Postponed events do not have a date set, rescheduled events have been moved to different date.
+      publication_status:
+        type: string
+        description: Only available in POST/PUT. Specifies whether the event should be published in the API ('public') or not ('draft').
       external_links:
         type: array
         items:
