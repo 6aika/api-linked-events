@@ -519,7 +519,7 @@ definitions:
         description: the languages spoken or supported at the event
         type: array
         items:
-          "$ref": '#/definitions/image'
+          "$ref": '#/definitions/language'
       super_event:
         description: references the aggregate event containing this event
         type: string
