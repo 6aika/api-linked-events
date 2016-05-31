@@ -1,9 +1,5 @@
 # Linked events API, 6Aika
 
-6Aika-Linked events -rajapinnan määritelmä
-
-Linked events API definition created by the six largest cities in Finland
-
 Linked events on avoimen lähdekoodin tapahtumatietokanta ja avoin tapahtumarajapinta. Se tarjoaa erilaisille sovelluksille tapahtumatiedot ja niiden paikkatiedot yhdenmukaisessa ja koneluettavassa muodossa.
 
 Rajapinnan tietomallin suunnittelussa on käytetty schema.orgin sanastoa. Rajapinta palauttaa tiedot JSON-LD-muodossa. Paikkatiedot on Helsingissä linkitetty toimipisterekisteriin, jossa on tietoja muun muassa tapahtumapaikkojen esteellisyydestä.
