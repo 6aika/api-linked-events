@@ -25,7 +25,7 @@ The API allows to search data by date, keywords and location. You can also searc
 This is a specification of basic features needed in an event information API. 
 The six largest cities in Finland created this specification with an aim to improve interoperability of event APIs across the globe. It is nevertheless possible for anyone interested in providing an event API to create features suitable for his/her own needs, as long as the API is interoperable with this specification.
 
-Additionally, an open source reference API have been created according to the 6Aika-definition. The API created by the Six Cities according to this spec can be found via following link: https://github.com/6aika/linkedevents.
+Additionally, an open source reference API exists according to the 6Aika-definition. The API can be found via following link: https://github.com/6aika/linkedevents.
 
 The Six Cities are committed to further develop this definition in cooperation of the cities. Comments and development ideas regarding the definition are welcome as GitHub issues.
 
