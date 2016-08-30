@@ -362,6 +362,9 @@ definitions:
       cropping:
         type: string
         description: Cropping data for the image.
+      license:
+        type: string
+        description: License data for the image. May be "cc_by" (default) or "event_only". The latter license restricts use of the image and is specified on the API front page.
 
 
   keyword:
