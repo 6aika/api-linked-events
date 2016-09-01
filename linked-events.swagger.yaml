@@ -99,7 +99,7 @@ parameters:
     name: data_source
     in: query
     type: string
-    description: Search for events that come from the specified source
+    description: Search for events that come from the specified source system
   event_location_param:
     name: location
     in: query
@@ -131,10 +131,10 @@ parameters:
     type: integer
     description: Search for events that are shorter than given time in seconds
   event_organization_param:
-    name: organization
+    name: publisher
     in: query
     type: string
-    description: Search for events that have given organization as source
+    description: Search for events published by the given organization
   event_sort_param:
     name: sort
     in: query
