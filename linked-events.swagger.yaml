@@ -25,6 +25,7 @@ host: api.hel.fi
 basePath: /linkedevents/v1
 
 schemes:
+  - https
   - http
   
 produces:
