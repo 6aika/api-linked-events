@@ -25,8 +25,9 @@ host: api.hel.fi
 basePath: /linkedevents/v1
 
 schemes:
+  - https
   - http
-  
+
 produces:
   - application/json
 
@@ -36,7 +37,7 @@ tags:
   - name: filter
     description: Search for keywords and places for filtering events
   - name: search
-    description: Fulltext search through events
+    description: Fulltext search through events and places
   - name: language
     description: Get supported languages
   - name: image
@@ -55,6 +56,27 @@ parameters:
     description: request that server delivers page_size results in response
     required: false
     type: integer
+  sort:
+    name: sort
+    in: query
+    description: return the results in ascending or descending order by the named field. sorting is only supported for some string, integer and datetime fields.
+    required: false
+    type: string
+  event_sort_param:
+    name: sort
+    in: query
+    type: string
+    description: Sort the returned events in the given order. Possible sorting criteria are 'start_time', 'end_time', 'days_left' and 'last_modified_time'. The default ordering is '-last_modified_time'.
+  place_sort_param:
+    name: sort
+    in: query
+    type: string
+    description: Sort the returned places in the given order. Possible sorting criteria are 'n_events', 'id', 'name', 'street_address' and 'postal_code'. The default ordering is '-n_events'.
+  keyword_sort_param:
+    name: sort
+    in: query
+    type: string
+    description: Sort the returned keywords in the given order. Possible sorting criteria are 'n_events', 'id', 'name', 'data_source'. The default ordering is '-data_source', '-n_events'.
   include_param:
     name: include
     in: query
@@ -99,7 +121,7 @@ parameters:
     name: data_source
     in: query
     type: string
-    description: Search for events that come from the specified source
+    description: Search for events that come from the specified source system
   event_location_param:
     name: location
     in: query
@@ -131,10 +153,10 @@ parameters:
     type: integer
     description: Search for events that are shorter than given time in seconds
   event_organization_param:
-    name: organization
+    name: publisher
     in: query
     type: string
-    description: Search for events that have given organization as source
+    description: Search for events published by the given organization
 
 definitions:
 
@@ -159,6 +181,9 @@ definitions:
     type: object
     title: Place
     description: Places describe physical locations for events and means for contacting people responsible for these locations. Place definitions come from organizations publishing events (field "publisher") and can thus have slightly different semantics between places sourced from different organizations.
+    required:
+    - name
+    - position
     properties:
       id:
         type: string
@@ -314,7 +339,7 @@ definitions:
 
   image:
     title: Image
-    description: Images are used as pictures for events, places and organizers. 
+    description: Images are used as pictures for events, places and organizers.
     type: object
     required:
     - url
@@ -354,6 +379,10 @@ definitions:
       cropping:
         type: string
         description: Cropping data for the image.
+      license:
+        type: string
+        description: License data for the image. May be "cc_by" (default) or "event_only". The latter license restricts use of the image and is specified on the API front page.
+
 
 
   keyword:
@@ -464,6 +493,9 @@ definitions:
     title: Languages supported in this API
     type: object
     description: Primary purpose of this endpoint is to allow users to identify which languages are supported for multilingual fields. It also has translations for the names of the languages.
+    required:
+    - id
+    - name
     properties:
       id:
         type: string
@@ -486,6 +518,12 @@ definitions:
     title: Events
     type: object
     description: 'Describes the actual events. Linked events API supports organizing events into hierarchies. This is implemented with collection events called "super events". Super events are normal event objects, that reference contained events in "sub_events" property. Currently there are two major use cases: events such as "Helsinki Festival", which consist of unique events over a span of time and recurring events such as theatrical productions with multiple showings. It is implementation dependent how the grouping of events is done. It should be noted that grouping might be automatic based on eg. event name and thus group unrelated events together and miss related events. Users of data are advised to prepare for this.'
+    required:
+    - name
+    - location
+    - start_time
+    - keywords
+    - publication_status
     properties:
       id:
         description: consists of source prefix and source specific identifier. These should be URIs uniquely identifying the event, and preferably also well formed http-URLs pointing to more information about the event.
@@ -498,12 +536,23 @@ definitions:
         items:
           type: string
           format: uri
+      in_language:
+        description: the languages spoken or supported at the event
+        type: array
+        items:
+          "$ref": '#/definitions/language'
       super_event:
         description: references the aggregate event containing this event
+        type: string
+      super_event_type:
+        description: If the event has sub_events, describes the type of the event. Current options are 'null' and 'recurring', which means a repeating event.
         type: string
       event_status:
         type: string
         description: As defined in schema.org/Event. Postponed events do not have a date set, rescheduled events have been moved to different date.
+      publication_status:
+        type: string
+        description: Only available in POST/PUT. Specifies whether the event should be published in the API ('public') or not ('draft').
       external_links:
         type: array
         items:
@@ -518,7 +567,7 @@ definitions:
         type: array
         items:
           type: string
-        description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series.
+        description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series. The field 'super_event_type' tells the type of the aggregate event.
       custom_data:
         type: string
         description: 'Key value field for custom data. FIXME: is there 6Aika-wide use case for this?'
@@ -586,7 +635,7 @@ definitions:
       date_published:
         type: string
         format: date-time
-        description: Date this event is free to be published      
+        description: Date this event is free to be published
       provider:
         type: object
         description: organization responsible for the practical implementation of the event
@@ -681,7 +730,7 @@ definitions:
       is_free:
         type: boolean
         description: Whether the event is of free admission
-  
+
   eventlink:
     title: Links to related information
     description: Links to entities that the event publisher considers related to this event. Eg. links to catering service available during theatrical production. The links will most likely point to unstructured content, ie. web pages suitable for human viewing.
@@ -701,7 +750,34 @@ paths:
   /search/:
     get:
       summary: Search through events and places
-      description: Search endpoint is for searching through events and places, returning resources that match the given search criteria. The resource type (Event or Place) is returned in the `resource_type` attribute. The results are sorted by relevancy score. If no time filter (`start` or `end`) is supplied, the relevancy score will decay over time so that events that are closer to today will get a higher score.
+      description: |
+        <h2 id="using-search-endpoint">Using the search endpoint</h2>
+        <p>This is the supposedly intelligent Elasticsearch Finnish full-text search for both events and places.
+            The results are sorted by relevance score shown in the <code>score</code> field. The search parameter is <code>?q=</code>.
+        <h4 id="specifying-resource-type">Specifying resource type</h4>
+        <p>In the default case, both events and places are returned. The type of each resource is returned in the
+            <code>resource_type</code> field. You may use the parameter <code>type</code> to ask for only <code>event</code> or <code>place</code>.
+        <h4 id="events-with-decay-score">Future events with time decay</h4>
+        <p>When searching for events only (<code>?type=event</code>), by default only future events are returned, with a decay function applied so that next
+            events get a higher relevance score. This means that
+            events in the near future are returned first:</p>
+        <pre><code>search/?type=event&q=sibelius
+        </code></pre>
+        <p><a href="?type=event&q=sibelius" title="json">See the result</a></p>
+        <h4 id="events-with-time-filtering">Events with time filtering</h4>
+        <p>When searching for events only (<code>?type=event</code>), you may also search for events in the specified time range using
+            <code>start</code> or <code>end</code> or both. In this case, relevance score
+        is calculated only based on Finnish tokenization of the search string, with no time preference:</p>
+        <pre><code>search/?type=event&q=sibelius&start=2017-01-01
+        </code></pre>
+        <p><a href="?type=event&q=sibelius&start=2017-01-01" title="json">See the result</a></p>
+        <h4 id="autocomplete">Autocomplete</h4>
+                <p>For fast autocomplete substring match in the resource name, use the <code>?input=</code> parameter instead.
+                    When searching for events only (<code>?type=event</code>), by default only future events are returned, with a decay function applied so that next
+            events get a higher relevance score. May be combined with <code>start</code> and <code>end</code>.
+        <pre><code>search/?type=place&input=sibe
+        </code></pre>
+        <p><a href="?type=event&input=sibe" title="json">See the result</a></p>
       operationId: event_search
       tags:
       - search
@@ -711,11 +787,11 @@ paths:
         - name: type
           in: query
           type: string
-          description: Comma-delimited list of resource types to search for. Currently allowed values are `event` and `place`.
+          description: Comma-delimited list of resource types to search for. Currently allowed values are `event` and `place`. `type=event` must be specified for event date filtering and relevancy sorting.
         - name: q
           in: query
           type: string
-          description: Search for events matching this string. Mutually exclusive with `input` typeahead search.
+          description: Search for events and places matching this string. Mutually exclusive with `input` typeahead search.
         - name: input
           in: query
           type: string
@@ -748,6 +824,7 @@ paths:
         - $ref: '#/parameters/page_param'
         - $ref: '#/parameters/pagesize_param'
         - $ref: '#/parameters/include_param'
+        - $ref: '#/parameters/sort'
 
       responses:
         200:
@@ -761,6 +838,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/definitions/image'
+
+    post:
+      summary: Create a new image
+      operationId: image_create
+      description: There are two ways to create an image object. The image file can be posted as a multipart request, but the endpoint also accepts a simple JSON object with an external url in the url field. This allows using external images for events without saving them on the API server.
+      tags:
+      - image
+      consumes:
+      - multipart/form-data
+      responses:
+        201:
+          description: Object has been succesfully created. A copy of the object is returned in response body and headers contain Location pointing to the created event
+          schema:
+            $ref: '#/definitions/image'
+        400:
+          description: Input format was not correct, eg. mandatory field was missing or JSON was malformed
+        401:
+          description: User was not authenticated
+        403:
+          description: User does not have necessary permissions
+      parameters:
+      - name: image_file
+        in: formData
+        type: file
 
   /image/{id}/:
     get:
@@ -779,12 +880,61 @@ paths:
         in: path
         name: id
         required: true
+    put:
+      summary: Update an image
+      description: Images can be updated if the user has appropriate access permissions. The original implementation behaves like PATCH, ie. if some field is left out from the PUT call, its value is retained in database. In order to ensure consistent behaviour, users should always supply every field in PUT call.
+      operationId: image_update
+      tags:
+      - image
+      responses:
+        200:
+          description: Image has been succesfully replaced
+          schema:
+            $ref: '#/definitions/image'
+        400:
+          description: Input format was not correct, eg. mandatory field was missing or JSON was malformed
+        401:
+          description: User was not authenticated
+        403:
+          description: User does not have necessary permissions
+      parameters:
+      - type: string
+        in: path
+        name: id
+        required: true
+        description: Identifier for the image to be updated
+      - name: image_object
+        in: body
+        description: Image object that should replace the existing image, note that some implementations may retain unspecified fields at their original values.
+        schema:
+          $ref: '#/definitions/image'
+
 
   /keyword/:
     get:
       summary: Returns a list of keywords used for describing events
       description: |
-        keyword endpoint returns keywords connected with events. What this means is that nearly all filtering is applied to events. Response then contains those keywords that are associated with the events that have passed filters. Exceptions to this are marked.
+        <h2 id="using-keyword-endpoint">Using the keyword endpoint</h2>
+        <p>Here, categories for events are listed. Events in each category can be found at the
+        <code>event</code> endpoint using the query parameter <code>keyword</code>. The common keywords
+        used in all events originate from the <a href="https://finto.fi/yso/en/">general Finnish ontology (yso)</a>,
+        hence the format <code>yso:p4354</code>. Default ordering is decreasing order by the number of events found.</p>
+        <h4 id="keyword-text">Keyword text</h4>
+        <p>To find keywords that contain a specific string, use the query parameter <code>text</code>.</p>
+        <p>Example:</p>
+        <pre><code>keyword/?text=lapset
+        </code></pre>
+        <p><a href="?text=lapset" title="json">See the result</a></p>
+        <h4 id="keyword-source">Keyword source</h4>
+        <p>Will restrict keywords to a specific data source.</p>
+        <p>Example:</p>
+        <pre><code>keyword/?data_source=yso
+        </code></pre>
+        <p><a href="?data_source=yso" title="json">See the result</a></p>
+        <h4 id="showing-all-keyword">Showing all keywords</h4>
+        <p>By default, only those keywords which have listed events are
+        displayed. You may display keywords with zero <code>n_events</code> with the
+            query parameter <code>show_all_keywords</code>.</p>
       operationId: keyword_list
       tags:
       - filter
@@ -801,21 +951,11 @@ paths:
           in: query
           type: string
           description: 'Search for keywords (**note**: NOT events) that come from the specified data source (see data source in keyword definition).'
-        - name: filter
+        - name: text
           in: query
           type: string
-          description: 'Search for keywords (**note**: NOT events) that begin with the given string. This applies even when show_all_keywords is specified.'
-        - $ref: '#/parameters/event_text_param'
-        - $ref: '#/parameters/event_last_modified_param'
-        - $ref: '#/parameters/event_start_param'
-        - $ref: '#/parameters/event_end_param'
-        - $ref: '#/parameters/event_bbox_param'
-        - $ref: '#/parameters/event_location_param'
-        - $ref: '#/parameters/event_keyword_param'
-        - $ref: '#/parameters/event_recurring_param'
-        - $ref: '#/parameters/event_min_duration_param'
-        - $ref: '#/parameters/event_max_duration_param'
-        - $ref: '#/parameters/event_organization_param'
+          description: 'Search for keywords (**note**: NOT events) that contain the given string. This applies even when show_all_keywords is specified.'
+        - $ref: '#/parameters/keyword_sort_param'
 
       responses:
         200:
@@ -847,7 +987,7 @@ paths:
         in: path
         name: id
         required: true
-        
+
   /keyword_set/:
     get:
       summary: Return as list of keyword_sets for grouping keywords
@@ -893,7 +1033,41 @@ paths:
   /place/:
     get:
       summary: Returns list of places used for describing events
-      description: place endpoint returns places connected with events. What this means is that all filtering is applied to events. Response then contains those places that host the events that have passed filters. Exceptions to this are marked.
+      description: |
+        <h2 id="using-place-endpoint">Using the place endpoint</h2>
+        <p>Here, locations for events are listed. Events in each location can be found at the
+        <code>event</code> endpoint using the query parameter <code>location</code>. Most locations
+            originate from the <a href="https://servicemap.hel.fi">Helsinki service point registry (tprek)</a>, hence
+        the id format <code>tprek:28473</code>. An easy way to locate service points is
+                to browse our <a href="https://servicemap.hel.fi">Service Map</a>, which uses the same location ids,
+        e.g. <code>servicemap.hel.fi/unit/28473</code>.</p>
+        <h4 id="district">District</h4>
+        <p>To restrict the retrieved places to city district(s), use the
+        query parameter <code>division</code>, separating values by commas
+        if you wish to query for several divisions.</p>
+        <p>City of Helsinki neighborhoods (kaupunginosa), districts (peruspiiri)
+        and subdistricts (osa-alue) are supported.
+            <a href="http://kartta.hel.fi/?setlanguage=en&e=25498873&n=6674660&r=16&w=***&l=Karttasarja%2Ckaupunginosat%2Cosaalueet_WFS%2Cperuspiiri_WFS&o=100%2C100%2C100%2C100&swtab=kaikki">
+                Check the divisions on the Helsinki map service.</a>
+        </p>
+        <p>You may query either by specific OCD division type <code>peruspiiri:malmi</code>, or by division name
+        <code>malmi</code>. The latter query checks all divisions with the name,
+        regardless of division type.</p>
+        <p>Example:</p>
+        <pre><code>place/?division=malmi
+        </code></pre>
+        <p><a href="?division=malmi" title="json">See the result</a></p>
+        <h4 id="ordering">Ordering</h4>
+        <p>Default ordering is decreasing order by the number of events found.
+            You may also order results by <code>name</code>, <code>street_address</code> or <code>postal_code</code>.
+            For example:</p>
+        <pre><code>place/?sort=name
+        </code></pre>
+        <p><a href="?sort=name" title="json">See the result</a></p>
+        <h4 id="showing-all-places">Showing all places</h4>
+        <p>By default, only those locations which have listed events are
+        displayed. You may display locations with zero <code>n_events</code> with the
+            query parameter <code>show_all_places</code>.</p>
       operationId: place_list
       tags:
       - filter
@@ -904,18 +1078,11 @@ paths:
           in: query
           type: boolean
           description: 'Show all places, including those that are not hosting any events. Otherwise such places are hidden. When show_all_places is specified, no other filter is applied.'
-        - $ref: '#/parameters/event_text_param'
-        - $ref: '#/parameters/event_last_modified_param'
-        - $ref: '#/parameters/event_start_param'
-        - $ref: '#/parameters/event_end_param'
-        - $ref: '#/parameters/event_bbox_param'
-        - $ref: '#/parameters/event_data_source_param'
-        - $ref: '#/parameters/event_location_param'
-        - $ref: '#/parameters/event_keyword_param'
-        - $ref: '#/parameters/event_recurring_param'
-        - $ref: '#/parameters/event_min_duration_param'
-        - $ref: '#/parameters/event_max_duration_param'
-        - $ref: '#/parameters/event_organization_param'
+        - name: division
+          in: query
+          type: string
+          description: 'You may filter places by specific OCD division id, or by division name. The latter query checks all divisions with the name, regardless of division type.'
+        - $ref: '#/parameters/place_sort_param'
 
       responses:
         200:
@@ -1019,6 +1186,55 @@ paths:
         <pre><code>event/?bbox=24.9348,60.1762,24.9681,60.1889
         </code></pre>
         <p><a href="?bbox=24.9348,60.1762,24.9681,60.1889" title="json">See the result</a></p>
+        <h4 id="specific-location">Specific location</h4>
+        <p>To restrict the retrieved events to a known location(s), use
+        the query parameter <code>location</code>, separating values by commas
+        if you wish to query for several locations.</p>
+        <p>Location ids are found at the <code>place</code> endpoint, which lists the
+        locations in decreasing number of events found. Most locations
+        originate from the Helsinki service point registry (tprek), hence
+        the format <code>tprek:28473</code>. An easy way to locate service points is
+        to browse <code>servicemap.hel.fi</code>, which uses the same location ids,
+        e.g. <code>servicemap.hel.fi/unit/28473</code>.</p>
+        <p>Example:</p>
+        <pre><code>event/?location=tprek:28473
+        </code></pre>
+        <p><a href="?location=tprek:28473" title="json">See the result</a></p>
+        <h4 id="district">District</h4>
+        <p>To restrict the retrieved events to city district(s), use the
+        query parameter <code>division</code>, separating values by commas
+        if you wish to query for several divisions.</p>
+        <p>City of Helsinki neighborhoods (kaupunginosa), districts (peruspiiri)
+        and subdistricts (osa-alue) are supported.
+            <a href="http://kartta.hel.fi/?setlanguage=en&e=25498873&n=6674660&r=16&w=***&l=Karttasarja%2Ckaupunginosat%2Cosaalueet_WFS%2Cperuspiiri_WFS&o=100%2C100%2C100%2C100&swtab=kaikki">
+                Check the divisions on the Helsinki map service.</a>
+        </p>
+        <p> You may query either by specific OCD division type <code>peruspiiri:malmi</code>, or by division name
+        <code>malmi</code>. The latter query checks all divisions with the name,
+        regardless of division type.</p>
+        <p>Example:</p>
+        <pre><code>event/?division=malmi
+        </code></pre>
+        <p><a href="?division=malmi" title="json">See the result</a></p>
+        <h3 id="event-category">Event category</h3>
+        <p>To restrict the retrieved events by category, use the query
+        parameter <code>keyword</code>, separating values by commas if you wish to
+        query for several locations.</p>
+        <p>Keyword ids are found at the <code>keyword</code> endpoint, which lists the
+        keywords in decreasing number of events found. The common keywords
+        used in all events originate from the general Finnish ontology (yso),
+        hence the format <code>yso:p4354</code>.</p>
+        <p>Example:</p>
+        <pre><code>event/?keyword=yso:p4354
+        </code></pre>
+        <p><a href="?keyword=yso:p4354" title="json">See the result</a></p>
+        <h3 id="event-text">Event text</h3>
+        <p>To find out events that contain a specific string in any of the text
+        fields, use the query parameter <code>text</code>.</p>
+        <p>Example:</p>
+        <pre><code>event/?text=shostakovich
+        </code></pre>
+        <p><a href="?text=shostakovich" title="json">See the result</a></p>
         <h2 id="getting-detailed-data">Getting detailed data</h2>
         <p>In the default case, keywords, locations, and other fields that
         refer to separate resources are only displayed as simple references.</p>
@@ -1027,7 +1243,6 @@ paths:
         <pre><code>event/?include=location,keywords
         </code></pre>
         <p><a href="?include=location,keywords" title="json">See the result</a></p>
-        <h2 id="response-data-for-the-current-url">Response data for the current URL</h2>
       operationId: Event_list
       tags:
       - event
@@ -1047,11 +1262,16 @@ paths:
       - $ref: '#/parameters/event_bbox_param'
       - $ref: '#/parameters/event_data_source_param'
       - $ref: '#/parameters/event_location_param'
+      - name: division
+        in: query
+        type: string
+        description: 'You may filter places by specific OCD division id, or by division name. The latter query checks all divisions with the name, regardless of division type.'
       - $ref: '#/parameters/event_keyword_param'
       - $ref: '#/parameters/event_recurring_param'
       - $ref: '#/parameters/event_min_duration_param'
       - $ref: '#/parameters/event_max_duration_param'
       - $ref: '#/parameters/event_organization_param'
+      - $ref: '#/parameters/event_sort_param'
 
     post:
       summary: Create a new event
