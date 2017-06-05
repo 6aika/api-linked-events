@@ -1250,9 +1250,14 @@ paths:
         200:
           description: List of events
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/event'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/meta_definition'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/event'
       parameters:
       - $ref: '#/parameters/include_param'
       - $ref: '#/parameters/event_text_param'
