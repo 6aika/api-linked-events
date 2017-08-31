@@ -931,6 +931,12 @@ paths:
         <pre><code>keyword/?data_source=yso
         </code></pre>
         <p><a href="?data_source=yso" title="json">See the result</a></p>
+        <h4 id="ordering">Ordering</h4>
+        <p>Default ordering is decreasing order by the number of events found. You may also order results by <code>name</code>.
+        <p>Example:</p>
+        <pre><code>keyword/?sort=name
+        </code></pre>
+        <p><a href="?sort=name" title="json">See the result</a></p>
         <h4 id="showing-all-keyword">Showing all keywords</h4>
         <p>By default, only those keywords which have listed events are
         displayed. You may display keywords with zero <code>n_events</code> with the
@@ -1040,7 +1046,13 @@ paths:
             originate from the <a href="https://servicemap.hel.fi">Helsinki service point registry (tprek)</a>, hence
         the id format <code>tprek:28473</code>. An easy way to locate service points is
                 to browse our <a href="https://servicemap.hel.fi">Service Map</a>, which uses the same location ids,
-        e.g. <code>servicemap.hel.fi/unit/28473</code>.</p>
+        e.g. <code>servicemap.hel.fi/unit/28473</code>. Default ordering is decreasing order by the number of events found.</p>
+        <h4 id="place-text">Place text</h4>
+        <p>To find places that contain a specific string, use the query parameter <code>text</code>.</p>
+        <p>Example:</p>
+        <pre><code>place/?text=tuomiokirkko
+        </code></pre>
+        <p><a href="?text=tuomiokirkko" title="json">See the result</a></p>
         <h4 id="district">District</h4>
         <p>To restrict the retrieved places to city district(s), use the
         query parameter <code>division</code>, separating values by commas
@@ -1063,7 +1075,13 @@ paths:
             For example:</p>
         <pre><code>place/?sort=name
         </code></pre>
-        <p><a href="?sort=name" title="json">See the result</a></p>
+        <p><a href="?sort=name" title="json">See the result</a></p>      
+        <h4 id="place-source">Place source</h4>
+        <p>Will restrict places to a specific data source.</p>
+        <p>Example:</p>
+        <pre><code>place/?data_source=tprek
+        </code></pre>
+        <p><a href="?data_source=tprek" title="json">See the result</a></p>
         <h4 id="showing-all-places">Showing all places</h4>
         <p>By default, only those locations which have listed events are
         displayed. You may display locations with zero <code>n_events</code> with the
