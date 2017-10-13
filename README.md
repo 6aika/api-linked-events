@@ -31,5 +31,5 @@ The Six Cities are committed to further develop this definition in cooperation o
 
 ## Lisätietoa / further information:
 
-* [Linked events: tapahtumarajapinnan toiminnot ja käyttötarkoitus](https://docs.google.com/document/d/1prnzkICV1x8GZqE9W90ILfRUN-Tc9pKQnpjI7weuoLU/edit)
-* [Linked events: rajapinnan tekniset vaatimukset](https://docs.google.com/document/d/1aAgsrVrrDrp272etJStolCTEg2jxDsWAvqe1pApoyDk/edit)
+* [Linked events: tapahtumarajapinnan toiminnot ja käyttötarkoitus](https://www.databusiness.fi/fi/linked-events/)
+* [Linked events: rajapinnan tekniset vaatimukset](https://www.databusiness.fi/fi/avoindata/avoimet-rajapinnat/linkedevents-teknisetvaatimukset/)
