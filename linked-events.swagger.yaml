@@ -1268,7 +1268,6 @@ paths:
         <pre><code>event/?sort=end_time
         </code></pre>
         <p><a href="?sort=name" title="json">See the result</a></p>
-    </div>
       operationId: Event_list
       tags:
       - event
