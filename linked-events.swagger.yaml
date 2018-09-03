@@ -680,6 +680,32 @@ definitions:
       publisher:
         type: string
         description: Organization responsible for this event record.
+      extension_course:
+        type: object
+        description: Linked Courses extra fields
+        properties:
+          enrolment_start_time:
+            type: string
+            format: date-time
+            description: Time enrolment for the course will start
+            example: "2018-08-01T08:00:00Z"
+          enrolment_end_time:
+            type: string
+            format: date-time
+            description: Time enrolment for the course will end
+            example: "2018-08-31T18:00:00Z"
+          maximum_attendee_capacity:
+            type: integer
+            description: Maximum number of people allowed to enrol for the course
+            example: 100
+          minimum_attendee_capacity:
+            type: integer
+            description: Minimum number of people required to enrol for the course
+            example: 10
+          remaining_attendee_capacity:
+            type: integer
+            description: Number of people still allowed to enrol for the course before it is full
+            example: 50
   offer:
     title: Price offers
     description: information record for this event. The prices are not in a structured format and the format depends on information source. An exception to this is the case of free event. These are indicated using is_free flag, which is searchable.
