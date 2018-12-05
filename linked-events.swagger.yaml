@@ -134,14 +134,6 @@ parameters:
     in: query
     type: string
     description: Search for events with given keywords as specified by id. Multiple ids are separated by comma
-  event_recurring_param:
-    name: recurring
-    in: query
-    type: string
-    enum:
-      - super
-      - sub
-    description: Search for events based on whether they are part of recurring event set. 'super' specifies recurring, while 'sub' is non-recurring.
   event_min_duration_param:
     name: min_duration
     in: query
@@ -157,6 +149,16 @@ parameters:
     in: query
     type: string
     description: Search for events published by the given organization
+  event_super_event_type_param:
+    name: super_event_type
+    in: query
+    type: string
+    description: Search for events with the given superevent type, including none. Multiple types are separated by comma
+  event_super_event_param:
+    name: super_event
+    in: query
+    type: string
+    description: Search for events with the given superevent as specified by id, including none. Multiple ids are separated by comma
 
 definitions:
 
@@ -1253,6 +1255,54 @@ paths:
         <pre><code>event/?text=shostakovich
         </code></pre>
         <p><a href="?text=shostakovich" title="json">See the result</a></p>
+        <h3 id="event-text">Event language</h3>
+        <p>To find events that have a set language or event data translated into
+        that language, use the query parameter <code>language</code>. If you only wish to see
+        events that have a set language, use the <code>in_language</code> parameter, and if
+        you only want event data translated to a set language, use the <code>translation</code> parameter.</p>
+        <p>Supported languages are found at the <code>language</code> endpoint, which also lists
+        which languages have translations available. Currently, translations are supported
+        in <code>fi</code>, <code>sv</code>, <code>en</code>, <code>ru</code>,
+        <code>zh_hans</code>, and <code>ar</code>.</p>
+        <p>Example:</p>
+        <pre><code>event/?language=ru
+        </code></pre>
+        <p><a href="?language=ru" title="json">See the result</a></p>
+        <h3 id="event-text">Event publisher</h3>
+        <p>To find out events that are published by a specific organization, use the query
+        parameter <code>publisher</code>.</p>
+        <p>Existing organizations are found at the <code>organization</code> endpoint.</p>
+        <p>Example:</p>
+        <pre><code>event/?publisher=ytj:0586977-6
+        </code></pre>
+        <p><a href="?publisher=ytj:0586977-6" title="json">See the result</a></p>
+        <h3 id="event-hierarchy">Event hierarchy</h3>
+        <p>Events in linkedevents may be either standalone events, or they may have super or sub
+        events. There are two types of super events, indicated in the field
+        <code>super_event_type</code> by <code>recurring</code> (repeating events, event series)
+        and <code>umbrella</code> (festivals etc.).</p>
+        <p><code>recurring</code> events last for a period and have <code>sub_events</code> that all
+        have similar data, but different dates.</p>
+        <p><code>umbrella</code> events last for a period and may have different
+        <code>sub_events</code>, including <code>recurring</code> events (i.e. an
+        <code>umbrella</code> festival may have a <code>recurring</code> theater play
+        <code>sub_event</code>, which may have several nights as <code>sub_events</code>.)</p>
+        <h4 id="super-event-type">Super event type</h4>
+        <p>You may use the query parameter <code>super_event_type</code>, comma separated, to get
+        only super events of specific types. You may use <code>none</code> if you want non-super
+        events included.</p>
+        <p>Example:</p>
+        <pre><code>event/?super_event_type=umbrella,none
+        </code></pre>
+        <p><a href="?super_event_type=umbrella,none" title="json">See the result</a></p>
+        <h4 id="super-event-type">Super event</h4>
+        <p>You may use the query parameter <code>super_event</code>, comma separated, to get all
+        subevents for specific superevents. You may use <code>none</code> if you want all
+        events which have no superevent included.</p>
+        <p>Example:</p>
+        <pre><code>event/?super_event=linkedevents:agg-103
+        </code></pre>
+        <p><a href="?super_event=linkedevents:agg-103" title="json">See the result</a></p>
         <h2 id="getting-detailed-data">Getting detailed data</h2>
         <p>In the default case, keywords, locations, and other fields that
         refer to separate resources are only displayed as simple references.</p>
@@ -1301,6 +1351,8 @@ paths:
       - $ref: '#/parameters/event_min_duration_param'
       - $ref: '#/parameters/event_max_duration_param'
       - $ref: '#/parameters/event_organization_param'
+      - $ref: '#/parameters/event_super_event_type_param'
+      - $ref: '#/parameters/event_super_event_param'
       - $ref: '#/parameters/event_sort_param'
 
     post:
