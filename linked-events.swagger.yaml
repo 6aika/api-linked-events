@@ -1312,12 +1312,14 @@ paths:
         </code></pre>
         <p><a href="?include=location,keywords" title="json">See the result</a></p>
         <h2 id="ordering">Ordering</h2>
-        <p>Default ordering is decreasing order by <code>last_modified_time</code>.
+        <p>Default ordering is descending order by <code>last_modified_time</code>.
         You may also order results by <code>start_time</code>, <code>end_time</code>,
-        <code>name</code> and <code>duration</code>. For example:</p>
-        <pre><code>event/?sort=end_time
+        <code>name</code> and <code>duration</code>. Descending order is denoted by
+        adding <code>-</code> in front of the parameter, default order is ascending.
+        For example:</p>
+        <pre><code>event/?sort=-end_time
         </code></pre>
-        <p><a href="?sort=name" title="json">See the result</a></p>
+        <p><a href="?sort=-end_time" title="json">See the result</a></p>
       operationId: Event_list
       tags:
       - event
@@ -1334,6 +1336,8 @@ paths:
                 items:
                   $ref: '#/definitions/event'
       parameters:
+      - $ref: '#/parameters/page_param'
+      - $ref: '#/parameters/pagesize_param'
       - $ref: '#/parameters/include_param'
       - $ref: '#/parameters/event_text_param'
       - $ref: '#/parameters/event_last_modified_param'
