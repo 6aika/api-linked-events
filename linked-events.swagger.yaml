@@ -1312,7 +1312,7 @@ paths:
         </code></pre>
         <p><a href="?include=location,keywords" title="json">See the result</a></p>
         <h2 id="ordering">Ordering</h2>
-        <p>Default ordering is descending order by <code>last_modified_time</code>.
+        <p>Default ordering is descending order by <code>-last_modified_time</code>.
         You may also order results by <code>start_time</code>, <code>end_time</code>,
         <code>name</code> and <code>duration</code>. Descending order is denoted by
         adding <code>-</code> in front of the parameter, default order is ascending.
