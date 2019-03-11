@@ -1351,7 +1351,6 @@ paths:
         type: string
         description: 'You may filter places by specific OCD division id, or by division name. The latter query checks all divisions with the name, regardless of division type.'
       - $ref: '#/parameters/event_keyword_param'
-      - $ref: '#/parameters/event_recurring_param'
       - $ref: '#/parameters/event_min_duration_param'
       - $ref: '#/parameters/event_max_duration_param'
       - $ref: '#/parameters/event_organization_param'
