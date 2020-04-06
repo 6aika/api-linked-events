@@ -1025,7 +1025,7 @@ paths:
   /keyword_set/:
     get:
       summary: Return as list of keyword_sets for grouping keywords
-      description: Unlike other endpoints, keyword_sets do not support filtering. It is expected that the full result set will remain small enough.
+      description: Unlike other endpoints, keyword_sets do not support filtering. It is expected that the full result set will remain small enough. Recommended keyword_sets are <code>helsinki:topics</code> for general categorization and <code>helsinki:audiences</code> for target grouping.
       operationId: keyword_set_list
       tags:
       - filter
@@ -1270,6 +1270,8 @@ paths:
         keywords in decreasing number of events found. The common keywords
         used in all events originate from the general Finnish ontology (yso),
         hence the format <code>yso:p4354</code>.</p>
+        <p>Recommended keywords for sorting through all events are included in the <code>keyword_sets</code>
+        <code>helsinki:topics</code> (general categorization) and <code>helsinki:audiences</code> (target grouping).</p>
         <p>Example:</p>
         <pre><code>event/?keyword=yso:p4354
         </code></pre>
