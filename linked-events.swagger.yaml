@@ -96,6 +96,26 @@ parameters:
     description: Search for events that have been modified since or at this time.
     type: string
     format: dateTime
+  event_show_deleted_param:
+    name: show_deleted
+    in: query
+    description: Include deleted events in the query.
+    type: boolean
+  event_event_status_param:
+    name: event_status
+    in: query
+    description: Search for events with the specified status in the event_status field.
+    type: string
+  event_is_free_param:
+    name: is_free
+    in: query
+    description: Search for events that have a price that is free, or not free.
+    type: boolean
+  event_division_param:
+    name: division
+    in: query
+    description: You may filter places by specific OCD division id, or by division name. The latter query checks all divisions with the name, regardless of division type..
+    type: string
   event_bbox_param:
     name: bbox
     in: query
@@ -104,19 +124,19 @@ parameters:
       type: string
     minItems: 4
     maxItems: 4
-    description: Search for events that are within this bounding box. Decimal coordinates are given in order west, south, east, north. Period is used as decimal separator.
+    description: Search for events that are within this bounding box. Decimal coordinates are given in order west, south, east, north. Period is used as decimal separator. Coordinate system is EPSG:4326.
   event_start_param:
     name: start
     in: query
     type: string
     format: date-time
-    description: Search for events beginning or ending after this time. Dates can be specified using ISO 8601 ("2016-01-12") and additionally "today".
+    description: Search for events beginning or ending after this time. Dates can be specified using ISO 8601 ("2016-01-12") and additionally "today" and "now".
   event_end_param:
     name: end
     in: query
     type: string
     format: date-time
-    description: Search for events beginning or ending before this time. Dates can be specified using ISO 8601 ("2016-01-12") and additionally "today".
+    description: Search for events beginning or ending before this time. Dates can be specified using ISO 8601 ("2016-01-12") and additionally "today" and "now".
   event_data_source_param:
     name: data_source
     in: query
@@ -134,6 +154,11 @@ parameters:
     in: query
     type: string
     description: Search for events with given keywords as specified by id. Multiple ids are separated by comma
+  event_keyword_AND_param:
+    name: keyword_AND
+    in: query
+    type: string
+    description: Search for events with all given keywords as specified by id. Multiple ids are separated by comma
   event_min_duration_param:
     name: min_duration
     in: query
@@ -144,11 +169,31 @@ parameters:
     in: query
     type: integer
     description: Search for events that are shorter than given time in seconds
-  event_organization_param:
+  event_language_param:
+    name: language
+    in: query
+    description: Search for events that have data or are organized in this language.
+    type: string
+  event_translation_param:
+    name: translation
+    in: query
+    description: Search for events that have data in this language.
+    type: string
+  event_in_language_param:
+    name: in_language
+    in: query
+    description: Search for events that are organized in this language.
+    type: string
+  event_publisher_param:
     name: publisher
     in: query
     type: string
-    description: Search for events published by the given organization
+    description: Search for events published by the given organization as specified by id.
+  event_publisher_ancestor_param:
+    name: publisher_ancestor
+    in: query
+    type: string
+    description: Search for events published by any suborganization under the given organization as specified by id.
   event_super_event_type_param:
     name: super_event_type
     in: query
@@ -1437,19 +1482,24 @@ paths:
       - $ref: '#/parameters/include_param'
       - $ref: '#/parameters/event_text_param'
       - $ref: '#/parameters/event_last_modified_param'
+      - $ref: '#/parameters/event_show_deleted_param'
+      - $ref: '#/parameters/event_event_status_param'
+      - $ref: '#/parameters/event_is_free_param'
       - $ref: '#/parameters/event_start_param'
       - $ref: '#/parameters/event_end_param'
       - $ref: '#/parameters/event_bbox_param'
       - $ref: '#/parameters/event_data_source_param'
       - $ref: '#/parameters/event_location_param'
-      - name: division
-        in: query
-        type: string
-        description: 'You may filter places by specific OCD division id, or by division name. The latter query checks all divisions with the name, regardless of division type.'
+      - $ref: '#/parameters/event_division_param'
       - $ref: '#/parameters/event_keyword_param'
+      - $ref: '#/parameters/event_keyword_AND_param'
       - $ref: '#/parameters/event_min_duration_param'
       - $ref: '#/parameters/event_max_duration_param'
-      - $ref: '#/parameters/event_organization_param'
+      - $ref: '#/parameters/event_language_param'
+      - $ref: '#/parameters/event_translation_param'
+      - $ref: '#/parameters/event_in_language_param'
+      - $ref: '#/parameters/event_publisher_param'
+      - $ref: '#/parameters/event_publisher_ancestor_param'
       - $ref: '#/parameters/event_super_event_type_param'
       - $ref: '#/parameters/event_super_event_param'
       - $ref: '#/parameters/event_sort_param'
