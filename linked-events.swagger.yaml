@@ -33,9 +33,9 @@ produces:
 
 tags:
   - name: event
-    description: Search and Edit events
+    description: Search and edit events
   - name: filter
-    description: Search for keywords and places for filtering events
+    description: Browse keywords, places and publishers for filtering events
   - name: search
     description: Fulltext search through events and places
   - name: language
@@ -430,7 +430,66 @@ definitions:
         type: string
         description: License data for the image. May be "cc_by" (default) or "event_only". The latter license restricts use of the image and is specified on the API front page.
 
-
+  organization:
+    title: Organization
+    description: Organizations are the entities that publish events.
+    type: object
+    required:
+    - id
+    - name
+    - data source
+    properties:
+      id:
+        type: string
+        description: Consists of source prefix and source specific identifier. These should be URIs uniquely identifying the organization, and preferably also well formed http-URLs pointing to more information about the organization.
+      name:
+        type: string
+        description: The name of the organization.
+      origin_id:
+        type: string
+        description: Identifier for the organization in the original data source. For standardized namespaces this will be a shared identifier.
+      created_time:
+        type: string
+        format: date-time
+        description: 'Creation time for the organization information.'
+      last_modified_time:
+        type: string
+        format: date-time
+        description: 'Time this organization was modified in the datastore behind the API (not necessarily in the originating system)'
+      data_source:
+        type: string
+        description: Source of the organization data, typically API provider specific identifier. Will also be used to specify standardized namespaces as they are brought into use.
+      classification:
+        type: string
+        description: Id of the organization type.
+      founding_date:
+        type: string
+        format: date-time
+        description: 'Time the organization was founded.'
+      dissolution_date:
+        type: string
+        format: date-time
+        description: 'Time the organization was dissolved. If present, the organization no longer exists.'
+      is_affiliated:
+        type: boolean
+        description: Whether the organization is an affiliated organization of the parent, instead of a proper suborganization.
+      replaced_by:
+        "$ref": '#/definitions/organization'
+      has_regular_users:
+        type: boolean
+        description: Whether the organization has non-admin users in addition to admin users.
+      parent_organization:
+        "$ref": '#/definitions/organization'
+      sub_organizations:
+        type: array
+        description: The organizations that belong to this organization.
+        items:
+          "$ref": '#/definitions/organization'
+      affiliated_organizations:
+        type: array
+        description: The organizations that are affiliated partners to this organization, but not proper suborganizations.
+        items:
+          "$ref": '#/definitions/organization'
 
   keyword:
     title: Keyword
@@ -685,7 +744,7 @@ definitions:
         description: Date this event is free to be published
       provider:
         type: object
-        description: organization responsible for the practical implementation of the event
+        description: Description of who is responsible for the practical implementation of the event
         properties:
           fi:
             description: provider name in Finnish for the event
@@ -1108,6 +1167,59 @@ paths:
           description: Keyword_set record
           schema:
             $ref: '#/definitions/keyword_set'
+
+  /organization/:
+    get:
+      summary: Returns a list of organizations that publish events
+      description: |
+        <h2 id="using-organization-endpoint">Using the organization endpoint</h2>
+        <p>Here, the event publisher organizations are listed. Events published by each organization
+            can be found at the <code>event</code> endpoint using the query parameter <code>publisher</code>.</p>
+      operationId: organization_list
+      tags:
+      - filter
+      parameters:
+        - $ref: '#/parameters/page_param'
+        - $ref: '#/parameters/pagesize_param'
+        - name: child
+          in: query
+          type: string
+          description: 'Get the parent organization and all its ancestors for the given organization id.'
+        - name: parent
+          in: query
+          type: string
+          description: 'Get all suborganizations and their descendants for the given organization id.'
+
+      responses:
+        200:
+          description: List of organizations
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/meta_definition'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/organization'
+
+  /organization/{id}:
+    get:
+      summary: Return information for single organization
+      operationId: organization_retrieve
+      tags:
+      - filter
+      responses:
+        200:
+          description: Organization record
+          schema:
+            $ref: '#/definitions/organization'
+      parameters:
+      - type: string
+        description: Same as id in organization schema
+        in: path
+        name: id
+        required: true
 
   /place/:
     get:
