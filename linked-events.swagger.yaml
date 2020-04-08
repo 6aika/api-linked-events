@@ -382,7 +382,12 @@ definitions:
         description: Identifies the source for data, this is specific to API provider. This is useful for API users, as any data quality issues are likely to be specific to data source and workarounds can be applied as such.
       publisher:
         type: string
-        description: Organization that provided the event that this place is associated with
+        description: Organization that provided the location data
+      deleted:
+        type: boolean
+        description: Whether this location has been deleted in the original data source. It may still contain old events linked to it.
+      replaced_by:
+        "$ref": '#/definitions/place'
 
   image:
     title: Image
@@ -547,6 +552,11 @@ definitions:
         items:
           type: string
         description: FIXME(verify) alternative labels for this keyword, no language specified. Use case?
+      deprecated:
+        type: boolean
+        description: Whether this keyword has been deprecated in the original data source. It may still contain old events linked to it.
+      replaced_by:
+        "$ref": '#/definitions/keyword'
 
   keyword_set:
       title: Keyword set
@@ -786,6 +796,11 @@ definitions:
       publisher:
         type: string
         description: Organization responsible for this event record.
+      deleted:
+        type: boolean
+        description: Whether this event has been deleted in the original data source.
+      replaced_by:
+        "$ref": '#/definitions/event'
       extension_course:
         type: object
         description: Linked Courses extra fields
