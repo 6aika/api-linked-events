@@ -383,9 +383,6 @@ definitions:
       publisher:
         type: string
         description: Organization that provided the location data
-      deleted:
-        type: boolean
-        description: Whether this location has been deleted in the original data source. It may still contain old events linked to it.
       replaced_by:
         "$ref": '#/definitions/place'
 
