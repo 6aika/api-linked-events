@@ -1653,8 +1653,8 @@ paths:
         in: body
         schema:
           type: array
-            items:
-              $ref: '#/definitions/event'
+          items:
+            $ref: '#/definitions/event'
 
     put:
       summary: Bulk update several events
