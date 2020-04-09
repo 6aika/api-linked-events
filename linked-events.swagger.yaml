@@ -80,10 +80,8 @@ parameters:
   include_param:
     name: include
     in: query
-    type: array
-    items:
-      type: string
-    description: Embed given reference-type fields directly into the response, otherwise they are returned as URI references.
+    type: string
+    description: Embed given reference-type fields, comma-separated if several, directly into the response, otherwise they are returned as URI references.
   event_text_param:
     name: text
     in: query
@@ -145,9 +143,7 @@ parameters:
   event_location_param:
     name: location
     in: query
-    type: array
-    items:
-      type: integer
+    type: string
     description: Search for events in given locations as specified by id. Multiple ids are separated by comma
   event_keyword_param:
     name: keyword
@@ -264,7 +260,7 @@ definitions:
           "$ref": '#/definitions/image'
       origin_id:
         type: string
-        description: 'Place identifier in the originating system, these should be in same format as id but variations are more likely than with id.'
+        description: 'Place identifier in the originating system. Same as id but without the data source prefix.'
       created_time:
         type: string
         format: date-time
@@ -434,7 +430,7 @@ definitions:
 
   organization:
     title: Organization
-    description: Organizations are the entities that publish events.
+    description: Organizations are the entities that publish events and other data.
     type: object
     required:
     - id
@@ -524,6 +520,9 @@ definitions:
       origin_id:
         type: string
         description: Identifier for the keyword in the organization using this keyword. For standardized namespaces this will be a shared identifier.
+      publisher:
+        type: string
+        description: Id of the organization that has originally published this keyword.
       created_time:
         type: string
         format: date-time
@@ -644,11 +643,10 @@ definitions:
       location:
         "$ref": '#/definitions/place'
       keywords:
-        description: array of keyword uri references
+        description: The keywords that describe the topic and type of this event.
         type: array
         items:
-          type: string
-          format: uri
+          "$ref": '#/definitions/keyword'
       in_language:
         description: the languages spoken or supported at the event
         type: array
@@ -679,7 +677,7 @@ definitions:
       sub_events:
         type: array
         items:
-          type: string
+          "$ref": '#/definitions/event'
         description: for aggregate events this contains references to all sub events. Usually this means that the sub events are part of series. The field 'super_event_type' tells the type of the aggregate event.
       custom_data:
         type: string
@@ -727,7 +725,7 @@ definitions:
             format: url
       description:
         type: object
-        description: Description for the event, several chapters(FIXME, verify)
+        description: Long description for the event, several chapters
         properties:
           fi:
             description: Finnish description of the event
@@ -778,6 +776,7 @@ definitions:
         format: date-time
         description: Time the event will end
       audience:
+        description: The audience groups (picked from keywords) this event is intended for
         type: array
         items:
           "$ref": '#/definitions/keyword'
@@ -786,13 +785,13 @@ definitions:
         description: Unique identifier (URI)for the system from which this event came from, preferably URL with more information about the system and its policies
       created_by:
         type: string
-        description: FIXME(verify) Which API user created this keyword
+        description: Name and email of the user who created this event. Only available for authorized users in the publisher organization hierarchy.
       last_modified_by:
         type: string
-        description: FIXME(verify) Which API user most recently edited this keyword
+        description: Name and email of the user who last edited this event. Only available for authorized users in the publisher organization hierarchy.
       publisher:
         type: string
-        description: Organization responsible for this event record.
+        description: Id for the organization that published this event in Linkedevents.
       deleted:
         type: boolean
         description: Whether this event has been deleted in the original data source.
