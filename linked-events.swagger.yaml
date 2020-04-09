@@ -658,7 +658,7 @@ definitions:
         description: references the aggregate event containing this event
         type: string
       super_event_type:
-        description: If the event has sub_events, describes the type of the event. Current options are 'null' and 'recurring', which means a repeating event.
+        description: If the event has sub_events, describes the type of the event. Current options are 'null', 'recurring', which means a repeating event, and 'umbrella', which means a major event that has subevents.
         type: string
       event_status:
         type: string
