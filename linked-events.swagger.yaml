@@ -1681,8 +1681,8 @@ paths:
         description: Event objects that should replace the existing events. Each object must have id field that refers to an existing event.
         schema:
           type: array
-            items:
-              $ref: '#/definitions/event'
+          items:
+            $ref: '#/definitions/event'
 
   /event/{id}/:
     get:
