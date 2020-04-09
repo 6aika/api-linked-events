@@ -1629,13 +1629,13 @@ paths:
       - $ref: '#/parameters/event_sort_param'
 
     post:
-      summary: Create a new event
+      summary: Create a new event or events
       operationId: event_create
       tags:
       - event
       responses:
         201:
-          description: Object has been succesfully created. A copy of the object is returned in response body and headers contain Location pointing to the created event
+          description: Object(s) has/have been succesfully created. A copy of the object(s) is returned in response body and headers contain Location pointing to the created event
           schema:
             $ref: '#/definitions/event'
         400:
@@ -1649,6 +1649,40 @@ paths:
         in: body
         schema:
           $ref: '#/definitions/event'
+      - name: event_objects
+        in: body
+        schema:
+          type: array
+            items:
+              $ref: '#/definitions/event'
+
+    put:
+      summary: Bulk update several events
+      description: Events can be updated if the user has appropriate access permissions. The original implementation behaves like PATCH, ie. if some field is left out from the PUT call, its value is retained in database. In order to ensure consistent behaviour, users should always supply every field in PUT call.
+      operationId: event_bulk_update
+      tags:
+      - event
+      responses:
+        200:
+          description: Events have been successfully updated
+          schema:
+            type: array
+              items:
+                $ref: '#/definitions/event'
+        400:
+          description: Input format was not correct, eg. mandatory field was missing or JSON was malformed
+        401:
+          description: User was not authenticated
+        403:
+          description: User does not have necessary permissions for all referred events
+      parameters:
+      - name: event_objects
+        in: body
+        description: Event objects that should replace the existing events. Each object must have id field that refers to an existing event.
+        schema:
+          type: array
+            items:
+              $ref: '#/definitions/event'
 
   /event/{id}/:
     get:
@@ -1695,3 +1729,22 @@ paths:
         description: Event object that should replace the existing event, note that some implementations may retain unspecified fields at their original values.
         schema:
           $ref: '#/definitions/event'
+    delete:
+      summary: Delete an event
+      description: Events can be deleted if the user has appropriate access permissions.
+      operationId: event_delete
+      tags:
+      - event
+      responses:
+        204:
+          description: Event has been successfully deleted
+        401:
+          description: User was not authenticated
+        403:
+          description: User does not have necessary permissions
+      parameters:
+      - type: string
+        in: path
+        name: id
+        required: true
+        description: Identifier for the event to be deleted
